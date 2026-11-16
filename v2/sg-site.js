@@ -366,7 +366,7 @@ window.SG_IMG=(function(b){var m={"c02481db7fc889423219d3c7cb99a652": "amazonia.
   'use strict';
   var W = window, D = document;
   if (W.__SG2) return; W.__SG2 = 1;
-  if (/[?&]sgraw=1/.test(location.search)) return;            // raw Konimbo page (used by the studio's add-to-cart frames)
+  if (/[?&]sgraw=1/.test(location.search)) { D.documentElement.classList.remove('sg-wait'); return; }            // raw Konimbo page (used by the studio's add-to-cart frames)
   var IMG = W.SG_IMG_BASE || '';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var fmt = function (n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
@@ -428,7 +428,7 @@ window.SG_IMG=(function(b){var m={"c02481db7fc889423219d3c7cb99a652": "amazonia.
   var q = new URLSearchParams(location.search);
   var type = W.SG_FORCE_TYPE || (q.get('sg') === 'studio' ? 'studio' : (path === '/' || path === '') ? 'home' : /^\/items\//.test(path) ? 'product' : /^\/\d+-/.test(path) ? 'category' : 'other');
   W.SGType = type;
-  if (type === 'other') return;   // pages not redesigned yet stay exactly as Konimbo renders them
+  if (type === 'other') { D.documentElement.classList.remove('sg-wait'); return; }   // pages not redesigned yet stay exactly as Konimbo renders them
 
   /* departments (real Konimbo categories) */
   var DEPTS = [
@@ -607,7 +607,7 @@ window.SG_IMG=(function(b){var m={"c02481db7fc889423219d3c7cb99a652": "amazonia.
 
   /* ---------------- boot ---------------- */
   function boot() {
-    var de = D.documentElement; de.classList.add('sg2', 'sg-t-' + type);
+    var de = D.documentElement; de.classList.remove('sg-wait'); de.classList.add('sg2', 'sg-t-' + type);
     // hide everything Konimbo rendered at load (popups it adds later stay visible)
     [].forEach.call(D.body.children, function (c) { if (c.id !== 'sg-test-env-banner' && !/^(SCRIPT|STYLE|LINK|NOSCRIPT)$/.test(c.tagName)) c.classList.add('sg-k'); });
     [].forEach.call(D.body.childNodes, function (n) { if (n.nodeType === 3 && n.nodeValue.trim()) { var s = D.createElement('span'); s.className = 'sg-k'; n.parentNode.replaceChild(s, n); s.appendChild(n); } });
@@ -620,7 +620,7 @@ window.SG_IMG=(function(b){var m={"c02481db7fc889423219d3c7cb99a652": "amazonia.
       else if (type === 'category') renderCategory(root);
       else if (type === 'product' && W.SGProduct) W.SGProduct(root);
       else if (type === 'studio' && W.SGStudio) W.SGStudio(root);
-    } catch (e) { if (W.console) console.error('SG', e); [].forEach.call(D.querySelectorAll('.sg-k'), function (k) { k.classList.remove('sg-k'); }); root.remove(); return; }
+    } catch (e) { de.classList.remove('sg-wait'); if (W.console) console.error('SG', e); [].forEach.call(D.querySelectorAll('.sg-k'), function (k) { k.classList.remove('sg-k'); }); root.remove(); return; }
     root.appendChild(footer());
   }
   W.SG = { Store: Store, toast: toast, fmt: fmt, esc: esc, num: num, cur: cur, pricesIn: pricesIn, findByText: findByText, imgOf: imgOf, itemId: itemId, cardHTML: cardHTML, bindCards: bindCards, shortName: shortName, giftItem: giftItem, scrapeCards: scrapeCards };
