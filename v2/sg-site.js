@@ -251,6 +251,7 @@ window.SG_IMG=(function(b){var m={"c02481db7fc889423219d3c7cb99a652": "amazonia.
       '<ul class="sg-pdp-why"><li>עד 5 תשלומים ללא ריבית</li><li>קנייה מאובטחת</li><li><a href="https://api.whatsapp.com/send?phone=97235700922&amp;text=' + encodeURIComponent(location.href) + '">שאלה על המוצר? כתבו לנו בוואטסאפ</a></li></ul>' +
       '</section></div>';
     root.appendChild(m);
+    if (/sgdebug=1/.test(location.search)) { var pre = D.createElement('pre'); pre.className = 'sg-dbg'; pre.textContent = 'BUY:\n' + (buy ? buy.outerHTML.replace(/\s+/g,' ').slice(0, 3000) : 'none') + '\n\nUPS:\n' + (ups ? ups.outerHTML.replace(/\s+/g,' ').slice(0, 2500) : 'none'); m.appendChild(pre); }
     // move Konimbo's live controls into the new layout
     if (ups) { m.querySelector('.sg-pdp-ups').appendChild(ups); ups.classList.add('sg-ups'); } else m.querySelector('.sg-pdp-ups').remove();
     if (buy) {
