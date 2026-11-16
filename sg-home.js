@@ -16,8 +16,8 @@ window.SG_SRC={"Main": "<!doctype html>\n<html lang=\"he\" dir=\"rtl\">\n<head>\
     return str.replace(RE, function (_, p) { var v = get(scope, p); return v == null || v === false ? (v === false ? 'false' : '') : String(v); });
   }
   function single(str) { var m = /^\s*\{\{\s*([A-Za-z_$][\w$]*(?:\.[\w$]+)*)\s*\}\}\s*$/.exec(str); return m && m[1]; }
-  var LINK = W.SG_LINKS || {};
-  function mapHref(h) { if (!h || h.charAt(0) === '#' || /^(https?:|mailto:|tel:)/.test(h)) return h; return LINK[h] != null ? LINK[h] : h; }
+  
+  function mapHref(h) { if (!h || h.charAt(0) === '#' || /^(https?:|mailto:|tel:)/.test(h)) return h; var L=W.SG_LINKS||{}; return L[h] != null ? L[h] : h; }
 
   function blob(s) { var M = W.SG_IMG || {}, B = W.SG_IMG_BASE || ''; return s.replace(/\/_blob\/([a-f0-9]{32})/g, function (m, h) { return M[h] || (B ? B + h + '.webp' : m); }); }
   function DCLogic(props) { this.props = props || {}; this.state = undefined; }
@@ -176,7 +176,7 @@ window.SG_SRC={"Main": "<!doctype html>\n<html lang=\"he\" dir=\"rtl\">\n<head>\
    var src={}; src[m]=S[m]; if(m==='Main'){src.Header=S.Header;src.Footer=S.Footer;} app=SGDC.mount(root,src,m);}
  function start(){
    root=document.createElement('div'); root.id='sg-root'; root.className='sg-root'; root.setAttribute('dir','rtl');
-   document.body.insertBefore(root,document.body.firstChild); document.documentElement.classList.add('sg-on');
+   Array.prototype.slice.call(document.body.childNodes).forEach(function(n){if(n.nodeType===3&&n.nodeValue.trim()){var sp=document.createElement('span');sp.className='sg-stray';n.parentNode.replaceChild(sp,n);sp.appendChild(n);}}); document.body.insertBefore(root,document.body.firstChild); document.documentElement.classList.add('sg-on');
    go(); var t; window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(go,200);});
    document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href="#sg-soon"]'); if(a){e.preventDefault(); toast('העמוד הזה עוד לא הועבר לסביבת הבדיקות');}});
  }
