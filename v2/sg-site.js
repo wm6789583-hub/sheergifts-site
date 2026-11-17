@@ -250,8 +250,15 @@
       '<div class="h4-sheet" role="dialog" aria-modal="true" aria-label="פרטי מוצר" hidden><div class="h4-sh-bg" data-close></div><div class="h4-sh-in"></div></div>';
 
     var $ = function (s) { return m.querySelector(s); };
-    var plist = function (k) { return data[k] && data[k].p || []; };
-    function index() { byId = {}; WORLDS.forEach(function (k) { plist(k).forEach(function (p) { p.k = k; byId[p.id] = p; }); }); }
+    var uniq = {};
+    var plist = function (k) { return uniq[k] || []; };
+    function index() {
+      byId = {}; uniq = {}; var seen = {};
+      deps.forEach(function (k) {
+        uniq[k] = (data[k] && data[k].p || []).filter(function (p) { var key = p.name.replace(/\s+/g, ' ').trim(); if (seen[key] || seen[p.id]) return false; seen[key] = seen[p.id] = 1; return true; });
+        uniq[k].forEach(function (p) { p.k = k; byId[p.id] = p; });
+      });
+    }
     var img = function (p, cls) { return '<img' + (cls ? ' class="' + cls + '"' : '') + ' src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">'; };
     var price = function (p) { return '<span class="num">' + fmt(p.price) + '</span>' + cur; };
 
