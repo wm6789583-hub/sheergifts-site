@@ -438,7 +438,7 @@
   /* ---------------- page type ---------------- */
   var path = decodeURIComponent(location.pathname);
   var q = new URLSearchParams(location.search);
-  var type = W.SG_FORCE_TYPE || (q.get('sg') === 'studio' ? 'studio' : (path === '/' || path === '') ? 'home' : /^\/items\//.test(path) ? 'product' : /^\/\d+-/.test(path) ? 'category' : 'other');
+  var type = W.SG_FORCE_TYPE || (q.get('sg') === 'studio' ? 'studio' : (path === '/' || path === '') ? 'home' : /^\/items\//.test(path) ? 'product' : /^\/\d+-/.test(path) || /^\/search/.test(path) ? 'category' : 'other');
   W.SGType = type;
   if (type === 'other') { D.documentElement.classList.remove('sg-wait'); return; }   // pages not redesigned yet stay exactly as Konimbo renders them
 
@@ -594,6 +594,7 @@
   }
   function renderCategory(root) {
     var h1 = D.querySelector('h1'); var title = h1 ? h1.textContent.trim() : '';
+    if (/^\/search/.test(location.pathname)) title = 'תוצאות חיפוש: ' + (q.get('q') || '');
     var crumbs = crumbsNear(h1);
     var near = h1 ? (h1.parentElement.parentElement || h1.parentElement).textContent : '';
     var resT = (near.match(/תוצאות:\s*(\d+)/) || D.body.textContent.match(/תוצאות:\s*(\d+)\s*$/m) || [])[1];
