@@ -1,0 +1,10 @@
+{
+ "_how": "Rename to live.json once the photos are in v2/photo/live/. x/y = hotspot position in % of the photo (xm/ym for the mobile crop). id = Konimbo item id; name and price are read live from the product page.",
+ "hero":   {"d": "hero-d.webp", "ar": 2.05, "m": "hero-m.webp", "arm": 0.9,
+            "spots": [{"id": "6629644", "x": 58, "y": 30, "xm": 60, "ym": 28}]},
+ "table":  {"d": "table-d.webp", "ar": 2.9, "m": "table-m.webp", "arm": 1.0,
+            "spots": [{"id": "6629644", "x": 52, "y": 28, "xm": 55, "ym": 25}]},
+ "studio": {"d": "studio.webp", "ar": 1.6},
+ "arch":   {"home": "arch-home.webp", "textile": "arch-textile.webp", "baby": "arch-baby.webp", "toys": "arch-toys.webp", "judaica": "arch-judaica.webp",
+            "acc": "arch-acc.webp", "gifts": "arch-gifts.webp", "holidays": "arch-holidays.webp", "him": "arch-him.webp", "catering": "arch-catering.webp"}
+}

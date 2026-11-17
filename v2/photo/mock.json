@@ -1,0 +1,29 @@
+{
+ "hero": {
+  "d": "hero-d.webp",
+  "ar": 2.0513,
+  "m": "hero-m.webp",
+  "arm": 1.4452
+ },
+ "table": {
+  "d": "table-d.webp",
+  "ar": 2.1638,
+  "m": "table-d.webp",
+  "arm": 2.1638,
+  "arv": 2.9,
+  "op": "50% 72%"
+ },
+ "studio": {
+  "d": "studio.webp",
+  "ar": 1.9853
+ },
+ "arch": {
+  "home": "arch-home.webp",
+  "textile": "arch-textile.webp",
+  "baby": "arch-baby.webp",
+  "toys": "arch-toys.webp",
+  "judaica": "arch-judaica.webp",
+  "acc": "arch-acc.webp",
+  "gifts": "arch-gifts.webp"
+ }
+}
