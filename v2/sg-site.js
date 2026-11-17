@@ -285,7 +285,7 @@
     var cur4 = 0;
     function renderIdx() {
       $('.h4-idx').innerHTML = WORLDS.map(function (k, i) {
-        return '<button type="button" role="tab" data-w="' + i + '" aria-selected="' + (i === cur4) + '"><i class="num">' + String(i + 1).padStart(2, '0') + '</i><b>' + DEP[k][0] + '</b><small>' + (data[k] && data[k].n ? fmt(data[k].n) + ' פריטים' : '&nbsp;') + '</small></button>';
+        return '<button type="button" role="tab" data-w="' + i + '" aria-selected="' + (i === cur4) + '"><i class="num">' + String(i + 1).padStart(2, '0') + '</i><b>' + DEP[k][0] + '</b><small>' + DEP[k][2].split(',')[0] + '</small></button>';
       }).join('');
     }
     function sceneHTML(k, i) {
