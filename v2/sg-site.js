@@ -245,7 +245,7 @@
           '<div class="h4-way"><b>לפי תקציב</b><span>בחרו טווח ונציג מתנות שמתאימות לו</span><div class="h4-bud" role="group" aria-label="תקציב">' + BUDGETS.map(function (b, i) { return '<button type="button" data-b="' + i + '"' + (i === 1 ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>' + b[2] + '</button>'; }).join('') + '</div></div>' +
         '</div><div class="h4-rail" aria-live="polite"></div></section>' +
       /* 5 — the whole store, as an index */
-      '<section class="h4-index" aria-label="כל המחלקות"><header class="h4-sh"><p class="h4-eye">כל החנות</p><h2>עשר מחלקות. אלפי פריטים.</h2></header><ol class="h4-list"></ol><div class="h4-peek" aria-hidden="true"></div></section>' +
+      '<section class="h4-index" aria-label="כל המחלקות"><header class="h4-sh"><p class="h4-eye">כל החנות</p><h2>עשר מחלקות. חנות אחת.</h2></header><ol class="h4-list"></ol><div class="h4-peek" aria-hidden="true"></div></section>' +
       '<section class="h4-promise" aria-label="שירות"><div><b>עיצוב ועטיפה</b><span>כל מתנה נעטפת בידיים בחנות — ללא תוספת</span></div><div><b>עד 5 תשלומים</b><span>ללא ריבית, בקנייה מאובטחת</span></div><div><b>משלוח או איסוף</b><span>מרדכי אנילביץ 8, בני ברק</span></div><div><b>שאלה על מוצר?</b><span><a href="https://api.whatsapp.com/send?phone=97235700922">כתבו לנו בוואטסאפ</a> · <a href="tel:03-5700922">03-5700922</a></span></div></section>' +
       '<div class="h4-sheet" role="dialog" aria-modal="true" aria-label="פרטי מוצר" hidden><div class="h4-sh-bg" data-close></div><div class="h4-sh-in"></div></div>';
 
@@ -271,8 +271,7 @@
       requestAnimationFrame(function () { wall.classList.add('in'); });
     }
     function renderLive() {
-      var n = 0, k = 0; deps.forEach(function (d) { if (data[d] && data[d].n) { n += data[d].n; k++; } });
-      if (n) $('.h4-live .n').innerHTML = '<b class="num">' + fmt(n) + '</b> פריטים ב־' + k + ' מחלקות, ועוד מאות בחנות עצמה. וכל מה שתבחרו — נעטף כמתנה, ללא תוספת.';
+      $('.h4-live .n').innerHTML = 'כלי בית, קריסטל, טקסטיל, תינוקות, יודאיקה, ריחות, משחקים ומתנות — <b>עשר מחלקות, חנות אחת.</b> וכל מה שתבחרו נעטף כמתנה, ללא תוספת.';
     }
 
     /* ---------- 2. worlds ---------- */
@@ -286,7 +285,7 @@
       var l = plist(k).slice(0, 5);
       return '<article class="h4-w" data-w="' + i + '" style="--bg:' + DEP[k][3] + ';--fg:' + DEP[k][4] + '">' +
         '<div class="h4-wt"><p class="h4-eye"><span class="num">' + String(i + 1).padStart(2, '0') + '</span> / ' + WORLDS.length + '</p><h2>' + DEP[k][0] + '</h2><p>' + DEP[k][2] + '</p>' +
-        '<a class="h4-btn' + (DEP[k][3].charAt(1) < '5' ? ' light' : '') + '" href="' + DEP[k][1] + '">' + (data[k] && data[k].n ? 'לכל ' + fmt(data[k].n) + ' הפריטים' : 'לכל המחלקה') + ' ←</a></div>' +
+        '<a class="h4-btn' + (DEP[k][3].charAt(1) < '5' ? ' light' : '') + '" href="' + DEP[k][1] + '">' + 'לכל ' + DEP[k][0] + ' ←</a></div>' +
         '<div class="h4-comp">' + l.map(function (p, j) { return '<button type="button" class="h4-o s' + (j + 1) + '" data-id="' + esc(p.id) + '" style="--i:' + j + '"><span class="f">' + img(p) + '</span><span class="cap"><b>' + esc(S.shortName(p.name)) + '</b>' + price(p) + '</span></button>'; }).join('') + '</div></article>';
     }
     function renderWorlds() {
