@@ -420,10 +420,13 @@
       var done = false, fin = function (ok) { if (done) return; done = true; setTimeout(function () { f.remove(); }, 1500); res(ok); };
       f.onload = function () {
         try {
-          var d = f.contentDocument, b = findByText(d.body, 'הוסף לעגלה') || findByText(d.body, 'הוספה לסל');
+          var d = f.contentDocument, b = d.querySelector('.commit_to_real') || findByText(d.body, 'הוסף לעגלה') || findByText(d.body, 'הוספה לסל');
+          [].forEach.call(d.querySelectorAll('input.counter, input.fake_counter'), function (i) { if (!(+i.value > 0)) { i.value = 1; ['input', 'change', 'keyup'].forEach(function (ev) { i.dispatchEvent(new Event(ev, { bubbles: true })); }); } });
+          var cl0 = d.querySelector('a[href*="/orders/"]'), n0 = cl0 ? parseInt(cl0.textContent.replace(/\D/g, ''), 10) || 0 : -1;
           if (!b) return fin(false);
           var opts = d.querySelectorAll('select'); for (var i = 0; i < opts.length; i++) if (opts[i].offsetParent && opts[i].selectedIndex < 1 && opts[i].options.length > 1) return fin(false);   // product needs a choice: send the shopper to the page
-          b.click(); setTimeout(function () { fin(true); }, 1800);
+          b.click();
+          var t0 = Date.now(), chk = setInterval(function () { var cl = d.querySelector('a[href*="/orders/"]'), n = cl ? parseInt(cl.textContent.replace(/\D/g, ''), 10) || 0 : -1; if (n0 > -1 && n > n0) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 6000) { clearInterval(chk); fin(n0 < 0); } }, 300);
         } catch (err) { fin(false); }
       };
       setTimeout(function () { fin(false); }, 15000);
