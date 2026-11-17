@@ -1830,11 +1830,15 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         try {
           var d = f.contentDocument, b = d.querySelector('.commit_to_real') || findByText(d.body, 'הוסף לעגלה') || findByText(d.body, 'הוספה לסל');
           [].forEach.call(d.querySelectorAll('input.counter, input.fake_counter'), function (i) { if (!(+i.value > 0)) { i.value = 1; ['input', 'change', 'keyup'].forEach(function (ev) { i.dispatchEvent(new Event(ev, { bubbles: true })); }); } });
-          var cl0 = d.querySelector('a[href*="/orders/"]'), n0 = cl0 ? parseInt(cl0.textContent.replace(/\D/g, ''), 10) || 0 : -1;
+          // cart signature: number of lines + cart total (a product already in the cart only raises the total)
+          var sig = function () { var cl = d.querySelector('a[href*="/orders/"]'), n = cl ? parseInt(cl.textContent.replace(/\D/g, ''), 10) || 0 : -1, t = 0;
+            [].some.call(d.querySelectorAll('div,span'), function (e) { if (e.children.length < 3 && /^\s*סה"כ/.test(e.textContent) && /₪/.test(e.textContent)) { t = parseFloat(e.textContent.replace(/[^\d.]/g, '')) || 0; return true; } return false; });
+            return { n: n, t: t }; };
+          var s0 = sig(), n0 = s0.n;
           if (!b) return fin(false);
           var opts = d.querySelectorAll('select'); for (var i = 0; i < opts.length; i++) if (opts[i].offsetParent && opts[i].selectedIndex < 1 && opts[i].options.length > 1) return fin(false);   // product needs a choice: send the shopper to the page
           b.click();
-          var t0 = Date.now(), chk = setInterval(function () { var cl = d.querySelector('a[href*="/orders/"]'), n = cl ? parseInt(cl.textContent.replace(/\D/g, ''), 10) || 0 : -1; if (n0 > -1 && n > n0) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 6000) { clearInterval(chk); fin(n0 < 0); } }, 300);
+          var t0 = Date.now(), chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (s1.t > s0.t && s0.t > 0)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 6000) { clearInterval(chk); fin(n0 < 0); } }, 300);
         } catch (err) { fin(false); }
       };
       setTimeout(function () { fin(false); }, 15000);
