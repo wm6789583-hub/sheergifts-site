@@ -340,7 +340,7 @@
       btn.disabled = true; btn.textContent = 'מוסיפים לסל…';
       it.reduce(function (p, x) { return p.then(function () { return addOne(x).then(function (r) { if (r) ok++; else bad.push(x.short); msg.textContent = 'נוספו ' + ok + ' מתוך ' + it.length; }); }); }, Promise.resolve())
         .then(function () {
-          btn.disabled = false; btn.textContent = 'להוסיף את המתנה לסל';
+          btn.disabled = false; btn.textContent = 'להוסיף את המתנה לסל'; if (ok && W.SGCartBump) W.SGCartBump(ok);
           msg.innerHTML = 'נוספו לסל ' + ok + ' מתוך ' + it.length + ' פריטים.' + (bad.length ? ' לא הצלחנו להוסיף: ' + esc(bad.join(', ')) + ' — אפשר להוסיף מעמוד המוצר.' : '') + ' <a href="' + (D.querySelector('a[href*="/orders/"]') || { href: '#' }).href + '">למעבר לסל ←</a>';
         });
     }
