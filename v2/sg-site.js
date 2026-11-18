@@ -2405,6 +2405,13 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   };
 
   /* ---------- Konimbo cart (read-only) ---------- */
+  // Konimbo's qty cell holds the number twice (visible + hidden copy) with no space: read the first pure-number leaf, or an input
+  function qtyOf(c) {
+    if (!c) return 1; var inp = c.querySelector('input'); if (inp && +inp.value > 0) return +inp.value;
+    var leaf = [].filter.call(c.querySelectorAll('*'), function (e) { return !e.children.length && /^\s*\d+\s*$/.test(e.textContent); })[0];
+    var n = leaf ? parseInt(leaf.textContent, 10) : parseInt((c.textContent.match(/\d+/) || ['1'])[0], 10);
+    return n > 0 && n < 100 ? n : 1;
+  }
   G.readCart = function () {
     return new Promise(function (res) {
       var f = D.createElement('iframe'); f.style.cssText = 'position:fixed;width:10px;height:10px;left:-50px;top:0;opacity:0;pointer-events:none'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
@@ -2418,7 +2425,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
             if (rows.length || Date.now() - t0 > 4000) {
               clearInterval(iv);
               var lines = rows.map(function (tr) { var a = tr.querySelector('a[href*="/items/"]'), c = tr.querySelector('td'), pr = W.SG.pricesIn(tr);
-                return { id: W.SG.itemId(a.getAttribute('href')), name: a.textContent.replace(/\s+/g, ' ').trim(), qty: c ? parseInt((c.textContent.match(/\d+/) || ['1'])[0], 10) : 1, price: pr.length ? pr[pr.length - 1] : 0, img: (tr.querySelector('img') || {}).src || '' }; });
+                return { id: W.SG.itemId(a.getAttribute('href')), name: a.textContent.replace(/\s+/g, ' ').trim(), qty: qtyOf(c), price: pr.length ? pr[pr.length - 1] : 0, img: (tr.querySelector('img') || {}).src || '' }; });
               var by = {}; lines.forEach(function (l) { if (by[l.id]) by[l.id].qty = Math.max(by[l.id].qty, l.qty); else by[l.id] = l; });
               fin({ ok: rows.length > 0, lines: Object.keys(by).map(function (k) { return by[k]; }), n: n, href: cl.href });
             }
