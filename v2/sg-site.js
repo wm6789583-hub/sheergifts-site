@@ -1854,7 +1854,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         if (!lists.length) lists = deps.map(function (r) { return clean(r.cards, ex); }).filter(function (l) { return l.length; });
         var sameIds = {}; same.forEach(function (p) { sameIds[p.id] = 1; });
         lists = lists.map(function (l) { return l.filter(function (p) { return !sameIds[p.id]; }); });
-        var comp = mix(lists, 12);
+        var comp = mix(lists, 12); o.host._lists = lists;
         var near = o.price ? same.filter(function (p) { return p.price >= o.price * 0.55 && p.price <= o.price * 1.7; }).sort(function (a, b) { return Math.abs(a.price - o.price) - Math.abs(b.price - o.price); }) : same;
         if (near.length < 4) near = near.concat(same.filter(function (p) { return near.indexOf(p) < 0; }));
         render(comp, near.slice(0, 12), want.filter(function (s, i) { return rr[i] && clean(rr[i].cards, ex).length; }));
@@ -1865,7 +1865,12 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       var host = o.host, by = {}; [].concat(comp, near).forEach(function (p) { p.add = null; by[p.id] = p; });
       var html = '';
       // "buy together": this product + two complementary picks (different categories)
-      var pair = comp.slice(0, 2);
+      // one item from each of two different complementary categories, priced sensibly next to this product
+      var pair = [], used = {};
+      (host._lists || []).some(function (l) {
+        var c = l.filter(function (p) { return !used[p.id] && (!o.price || p.price <= o.price * 1.1); }).sort(function (a, b) { return Math.abs(a.price - o.price * 0.45) - Math.abs(b.price - o.price * 0.45); })[0];
+        if (c) { pair.push(c); used[c.id] = 1; } return pair.length >= 2; });
+      if (pair.length < 2) pair = pair.concat(comp.filter(function (p) { return !used[p.id]; }).slice(0, 2 - pair.length));
       if (o.price && pair.length) {
         var all = [{ id: String(o.id), name: o.name, price: o.price, img: o.img, url: o.url, self: true }].concat(pair);
         html += '<section class="rc-bt" aria-label="משתלבים יחד">' +
