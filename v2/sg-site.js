@@ -2108,7 +2108,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     function draw() {
       var v = view(), part = v.slice(0, st.shown);
       grid.innerHTML = part.length ? part.map(card).join('') : '<p class="pg-empty">' + (done ? 'אין מוצרים בטווח שנבחר.' : 'טוענים מוצרים…') + '</p>';
-      var tot = (totalT && done && v.length === list.length) ? totalT : v.length;
+      var tot = v.length;   // what is actually listed (Konimbo's 'תוצאות' figure is not per-category)
       $('.pg-cnt').innerHTML = 'נמצאו <b>' + tot + '</b> מוצרים' + (!done ? '<small> · טוענים עוד…</small>' : '');
       side.querySelector('.pg-show').textContent = 'הצגת ' + v.length + ' מוצרים';
       $('.pg-more').innerHTML = v.length > st.shown ? '<button type="button" class="pg-mb">להציג עוד ' + Math.min(24, v.length - st.shown) + ' מוצרים</button>' : '';
@@ -2119,7 +2119,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     /* the rest of the category: Konimbo's own next pages (?page=N), 12 per page */
     var pg = 2, base0 = location.pathname + location.search, busy = 0, ended = false, CAP = 40;
     var PS = Math.max(12, list.length);
-    var TOTAL = (function () { var m = (D.querySelector('.sg-k') || D.body).textContent.match(/תוצאות\s*:?\s*(\d+)/); return m ? +m[1] : 0; })();
+    var TOTAL = 0;
     if (TOTAL && list.length >= TOTAL) ended = true;
     function nextUrl(n) { var u = new URL(base0, location.href); u.searchParams.set('page', n); u.searchParams.delete('sgraw'); return u.pathname + u.search; }
     (function pump() {
