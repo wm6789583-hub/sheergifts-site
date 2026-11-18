@@ -2295,7 +2295,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
               [].forEach.call(counters, function (inp) { if (!(+inp.value > 0)) { inp.value = 1; ['input', 'change'].forEach(function (ev) { inp.dispatchEvent(new Event(ev, { bubbles: true })); }); } });
               b.click();
             }
-            chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (q > 0 && qtyInCart() > q)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 7000) { clearInterval(chk); fin(n0 < 0); } }, 300);
+            chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (q > 0 && qtyInCart() > q)) { clearInterval(chk); syncCount(d); fin(true); } else if (Date.now() - t0 > 7000) { clearInterval(chk); fin(n0 < 0); } }, 300);
           };
           if (!cl || n0 <= 0) return go(0);            // empty cart: nothing to read
           try { cl.click(); } catch (e) { return go(0); }
@@ -2382,6 +2382,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
 
   /* ---------------- shell: header + footer ---------------- */
   function cartLink() { var l = D.querySelectorAll('a[href*="/orders/"]'); for (var i = 0; i < l.length; i++) if (!l[i].closest('#sg-root')) return l[i]; return null; }
+  function syncCount(d) { try { var src = d.querySelector('a[href*="/orders/"]'), dst = cartLink(); if (!src || !dst) return; var n = parseInt(src.textContent.replace(/\D/g, ''), 10); if (isNaN(n)) return; var el = [].filter.call(dst.querySelectorAll('*'), function (e) { return !e.children.length && /^\s*\d+\s*$/.test(e.textContent); })[0] || dst; if (el === dst && dst.children.length) return; el.textContent = n; } catch (e) {} }
   function cartCount() { var a = cartLink(); var n = a ? parseInt(a.textContent.replace(/\D/g, ''), 10) : 0; return isNaN(n) ? 0 : n; }
   function cartHref() { var a = cartLink(); return a ? a.href : '#'; }
   function searchForm() { var i = D.querySelector('input[placeholder="מה תרצו לרכוש?"]'); return i ? i.form : null; }
