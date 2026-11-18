@@ -2322,25 +2322,37 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         return val() === t;
       };
       var dlg = function () { return [].filter.call(D.querySelectorAll('[role="dialog"]'), function (d) { return /לקופה/.test(d.textContent) && !d.closest('#sg-root'); })[0]; };
+      var rowIn = function (d) { return [].filter.call(d.querySelectorAll('tr'), function (tr) { var a = tr.querySelector('a[href*="/items/"]'); return a && itemId(a.getAttribute('href')) === id; })[0]; };
+      var closeD = function (d) { var x = d && [].filter.call(d.querySelectorAll('button'), function (b) { return /סגור/.test(b.textContent + (b.getAttribute('aria-label') || '')); })[0]; if (x) x.click(); };
+      // open Konimbo's mini cart (hidden) and read this product's line
       var readQ = function () { return new Promise(function (r) {
-        if (!cl || n0 <= 0) return r(0);
+        if (!cl || n0 <= 0) return r({ q: 0 });
         cl.click(); var t0 = Date.now(), iv = setInterval(function () {
           var d = dlg(), rows = d ? d.querySelectorAll('tr') : [];
           if ((d && rows.length) || Date.now() - t0 > 3500) {
-            clearInterval(iv); if (!d) return r(-1);
-            var q = 0; [].forEach.call(rows, function (tr) { var a = tr.querySelector('a[href*="/items/"]'); if (a && itemId(a.getAttribute('href')) === id) { var c = tr.querySelector('td'); q += parseInt(((c ? c.textContent : '').match(/\d+/) || ['0'])[0], 10) || 0; } });
-            var x = [].filter.call(d.querySelectorAll('button'), function (b) { return /סגור/.test(b.textContent + (b.getAttribute('aria-label') || '')); })[0]; if (x) x.click();
-            r(q);
+            clearInterval(iv); if (!d) return r({ q: -1 });
+            var tr = rowIn(d), c = tr && tr.querySelector('td');
+            r({ q: tr ? parseInt(((c ? c.textContent : '').match(/\d+/) || ['0'])[0], 10) || 0 : 0, d: d, tr: tr });
           }
         }, 200);
       }); };
-      var dry = /sgdbg=dry/.test(location.search), log = [];
-      if (dry) { var ins = [].map.call(scope.querySelectorAll('input'), function (x) { return x.type + '.' + x.className + '=' + x.value; }); log.push('inputs: ' + ins.join(' | ')); log.push('ci: ' + (ci && ci.className) + ' plus: ' + (plus ? plus.outerHTML.slice(0, 160) : '-') + ' minus: ' + (minus ? minus.outerHTML.slice(0, 160) : '-')); var _set = setTo; setTo = function (t) { var r = _set(t); log.push('target ' + t + ' -> ' + (ci && ci.value) + ' ok=' + r + ' all: ' + [].map.call(scope.querySelectorAll('input'), function (x) { return x.className + '=' + x.value; }).join(' | ')); return r; }; }
-      readQ().then(function (q) {
-        if (dry) { log.push('q=' + q); setTo(q + n); var o2 = D.createElement('pre'); o2.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#fff;font:11px monospace;white-space:pre-wrap;max-height:60vh;overflow:auto;margin:0;padding:8px;direction:ltr'; o2.textContent = log.join('\n'); D.body.appendChild(o2); return res(false); }
-        if (q < 0 || !setTo(q + n)) return res(false);
+      var waitCount = function (target, ms) { return new Promise(function (r) { var t0 = Date.now(), iv = setInterval(function () { if (cartCount() >= target) { clearInterval(iv); r(true); } else if (Date.now() - t0 > ms) { clearInterval(iv); r(false); } }, 250); }); };
+      readQ().then(function (st) {
+        if (st.q < 0) return res(false);
+        if (st.q > 0) {
+          // already in the cart: Konimbo would merge the counter into the line's quantity, so use its own +1 on that line
+          var k = 0, step = function () {
+            var d = dlg(), tr = d && rowIn(d), plus2 = tr && [].filter.call(tr.querySelectorAll('button,a'), function (e) { return /^הוספת 1/.test((e.getAttribute('aria-label') || e.getAttribute('title') || '').trim()) || e.textContent.trim() === '+'; })[0];
+            if (!plus2) { closeD(d); return res(k > 0); }
+            plus2.click(); k++;
+            waitCount(n0 + k, 7000).then(function (ok) { if (!ok) { closeD(dlg()); return res(k > 1); } if (k < n) setTimeout(step, 250); else { closeD(dlg()); res(true); } });
+          };
+          return step();
+        }
+        closeD(st.d);
+        if (!setTo(n)) return res(false);
         o.add.click();
-        var t0 = Date.now(), iv = setInterval(function () { var c = cartCount(); if (c >= n0 + n || (c > n0 && Date.now() - t0 > 2500)) { clearInterval(iv); res(true); } else if (Date.now() - t0 > 9000) { clearInterval(iv); res(cartCount() > n0); } }, 300);
+        waitCount(n0 + n, 9000).then(function (ok) { res(ok || cartCount() > n0); });
       });
     });
   };
