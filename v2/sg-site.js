@@ -2406,10 +2406,12 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
 
   /* ---------- Konimbo cart (read-only) ---------- */
   // Konimbo's qty cell holds the number twice (visible + hidden copy) with no space: read the first pure-number leaf, or an input
+  // Konimbo's qty cell holds the visible number plus a hidden copy/input that can lag at 1: take the largest number there
   function qtyOf(c) {
-    if (!c) return 1; var inp = c.querySelector('input'); if (inp && +inp.value > 0) return +inp.value;
-    var leaf = [].filter.call(c.querySelectorAll('*'), function (e) { return !e.children.length && /^\s*\d+\s*$/.test(e.textContent); })[0];
-    var n = leaf ? parseInt(leaf.textContent, 10) : parseInt((c.textContent.match(/\d+/) || ['1'])[0], 10);
+    if (!c) return 1;
+    var ns = [].filter.call(c.querySelectorAll('*'), function (e) { return !e.children.length && /^\s*\d+\s*$/.test(e.textContent); }).map(function (e) { return parseInt(e.textContent, 10); });
+    [].forEach.call(c.querySelectorAll('input'), function (i) { if (+i.value > 0) ns.push(+i.value); });
+    var n = ns.length ? Math.max.apply(null, ns) : 1;
     return n > 0 && n < 100 ? n : 1;
   }
   G.readCart = function () {
