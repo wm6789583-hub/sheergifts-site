@@ -2007,8 +2007,8 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       .map(function (im) { return im.getAttribute('data-zoom-image') || im.getAttribute('data-large') || im.getAttribute('data-src') || im.src; })
       .filter(function (u, i, a) { return u && !/no-?image|placeholder/i.test(u) && a.indexOf(u) === i; });
     // description, SKU
-    var desc = h1.nextElementSibling; while (desc && !desc.textContent.trim()) desc = desc.nextElementSibling;
-    var descTxt = desc ? desc.textContent.replace(/\s+/g, ' ').trim() : '';
+    var descTxt = '';
+    [h1.nextElementSibling, h1.parentElement && h1.parentElement.nextElementSibling].some(function (e) { while (e && !e.textContent.trim()) e = e.nextElementSibling; var t = e ? e.textContent.replace(/\s+/g, ' ').trim() : ''; if (t && t.length < 2000 && !/^(הוסף להשוואה|מק"ט)/.test(t) && !/₪/.test(t)) { descTxt = t; return true; } return false; });
     if (/^הוסף להשוואה|^מק"ט/.test(descTxt)) descTxt = '';
     var long = [].filter.call(D.querySelectorAll('.sg-k [class*="description"], .sg-k [class*="desc"], .sg-k [itemprop="description"]'), function (e) { return e.textContent.trim().length > descTxt.length && e.textContent.length < 4000 && !e.querySelector('h1'); })[0];
     if (long) descTxt = long.textContent.replace(/\s+/g, ' ').trim();
@@ -2334,7 +2334,10 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           }
         }, 200);
       }); };
+      var dry = /sgdbg=dry/.test(location.search), log = [];
+      if (dry) { var ins = [].map.call(scope.querySelectorAll('input'), function (x) { return x.type + '.' + x.className + '=' + x.value; }); log.push('inputs: ' + ins.join(' | ')); log.push('ci: ' + (ci && ci.className) + ' plus: ' + (plus ? plus.outerHTML.slice(0, 160) : '-') + ' minus: ' + (minus ? minus.outerHTML.slice(0, 160) : '-')); var _set = setTo; setTo = function (t) { var r = _set(t); log.push('target ' + t + ' -> ' + (ci && ci.value) + ' ok=' + r + ' all: ' + [].map.call(scope.querySelectorAll('input'), function (x) { return x.className + '=' + x.value; }).join(' | ')); return r; }; }
       readQ().then(function (q) {
+        if (dry) { log.push('q=' + q); setTo(q + n); var o2 = D.createElement('pre'); o2.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#fff;font:11px monospace;white-space:pre-wrap;max-height:60vh;overflow:auto;margin:0;padding:8px;direction:ltr'; o2.textContent = log.join('\n'); D.body.appendChild(o2); return res(false); }
         if (q < 0 || !setTo(q + n)) return res(false);
         o.add.click();
         var t0 = Date.now(), iv = setInterval(function () { var c = cartCount(); if (c >= n0 + n || (c > n0 && Date.now() - t0 > 2500)) { clearInterval(iv); res(true); } else if (Date.now() - t0 > 9000) { clearInterval(iv); res(cartCount() > n0); } }, 300);
