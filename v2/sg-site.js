@@ -2424,7 +2424,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
             var rows = [].filter.call(d.querySelectorAll('[role="dialog"] tr, tr'), function (tr) { return tr.querySelector('a[href*="/items/"]'); });
             if (rows.length || Date.now() - t0 > 4000) {
               clearInterval(iv);
-              var lines = rows.map(function (tr) { var a = tr.querySelector('a[href*="/items/"]'), c = tr.querySelector('td'), tds = tr.querySelectorAll('td'), pc = [].filter.call(tds, function (t) { return /₪/.test(t.textContent) && !t.querySelector('a,button'); }).pop(), pr = pc ? [parseFloat(pc.textContent.replace(/[^\d.]/g, '')) || 0] : W.SG.pricesIn(tr);
+              var lines = rows.map(function (tr) { var a = tr.querySelector('a[href*="/items/"]'), c = tr.querySelector('td'), tds = tr.querySelectorAll('td'), pc = [].filter.call(tds, function (t) { return /₪/.test(t.textContent) && !t.querySelector('a,button'); }).pop(), pr = pc ? [Math.min.apply(null, (pc.textContent.match(/\d[\d,]*(?:\.\d+)?/g) || ['0']).map(function (x) { return parseFloat(x.replace(/,/g, '')) || 0; }).filter(function (x) { return x > 0; }).concat([1e9]))] : W.SG.pricesIn(tr); if (pr[0] >= 1e9) pr = W.SG.pricesIn(tr);
                 return { id: W.SG.itemId(a.getAttribute('href')), name: a.textContent.replace(/\s+/g, ' ').trim(), qty: qtyOf(c), price: pr.length ? pr[pr.length - 1] : 0, img: (tr.querySelector('img') || {}).src || '' }; });
               var by = {}; lines.forEach(function (l) { if (by[l.id]) by[l.id].qty = Math.max(by[l.id].qty, l.qty); else by[l.id] = l; });
               fin({ ok: rows.length > 0, lines: Object.keys(by).map(function (k) { return by[k]; }), n: n, href: cl.href });
