@@ -1919,8 +1919,22 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           var s0 = sig(), n0 = s0.n;
           if (!b) return fin(false);
           var opts = d.querySelectorAll('select'); for (var i = 0; i < opts.length; i++) if (opts[i].offsetParent && opts[i].selectedIndex < 1 && opts[i].options.length > 1) return fin(false);   // product needs a choice: send the shopper to the page
-          b.click();
-          var t0 = Date.now(), chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (s1.t > s0.t && s0.t > 0)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 6000) { clearInterval(chk); fin(n0 < 0); } }, 300);
+          // Konimbo's add-to-cart SETS the line quantity to the counter value, so a product already in the cart
+          // would stay unchanged (or even drop). Read its current quantity from the mini cart first, then send qty+1.
+          var id = itemId(url), cl = d.querySelector('a[href*="/orders/"]'), counters = d.querySelectorAll('input.counter, input.fake_counter');
+          var qtyInCart = function () {
+            var ln = [].filter.call(d.querySelectorAll('a[href]'), function (a) { return /\/items\/(\d+)/.test(a.getAttribute('href')) && itemId(a.getAttribute('href')) === id && a.closest('tr'); })[0];
+            if (!ln) return 0; var c = ln.closest('tr').querySelector('td'); return c ? parseInt((c.textContent.match(/\d+/) || ['0'])[0], 10) || 0 : 0; };
+          var cartOpen = function () { return [].some.call(d.querySelectorAll('div,span'), function (e) { return e.children.length < 3 && /^\s*סה"כ/.test(e.textContent); }); };
+          var go = function (q) {
+            var want = q + 1;
+            [].forEach.call(counters, function (inp) { inp.value = want; ['input', 'change', 'keyup'].forEach(function (ev) { inp.dispatchEvent(new Event(ev, { bubbles: true })); }); });
+            b.click();
+            var t0 = Date.now(), chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (s1.t > s0.t && s0.t > 0) || (q > 0 && qtyInCart() > q)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 7000) { clearInterval(chk); fin(n0 < 0); } }, 300);
+          };
+          if (!cl || n0 <= 0) return go(0);            // empty cart: nothing to read
+          try { cl.click(); } catch (e) { return go(0); }
+          var r0 = Date.now(), rd = setInterval(function () { if (cartOpen() || Date.now() - r0 > 3000) { clearInterval(rd); if (cartOpen()) go(qtyInCart()); else fin(false); } }, 200);   // cart unreadable: never risk lowering a quantity — the caller sends the shopper to the product page
         } catch (err) { fin(false); }
       };
       setTimeout(function () { fin(false); }, 15000);
