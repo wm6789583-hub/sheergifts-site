@@ -626,7 +626,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         });
         pr = cand.length ? S.pricesIn(cand[0]) : [];
       }
-      var im = [].filter.call(d.querySelectorAll('img'), function (i) { return (i.alt || '').trim() === title; })[0];
+      var im = [].filter.call(d.querySelectorAll('img'), function (i) { var a = (i.alt || '').trim(); return a === title || (a.length >= 6 && title.indexOf(a) === 0); })[0];   // Konimbo cuts the alt at a quote mark (ס"מ)
       var p = { id: id, name: title, price: pr.length ? pr[pr.length - 1] : 0, img: im ? (im.getAttribute('data-zoom-image') || im.getAttribute('data-src') || im.getAttribute('src')) : '', url: '/items/' + id };
       if (!(p.price > 0)) { K.why[id] = 'noprice ' + pr.join('/') + ' ' + !!add; return null; }      // no price on the page: not purchasable, no hotspot
       K.byId[id] = p; return p;
@@ -1632,6 +1632,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       var dbg = /[?&]sgdbg=1/.test(location.search), dlog = [];
       var byIds = function (sp) { return Promise.all((sp || []).map(function (x) { return K.item(x.id).then(function (p) {
         if (dbg) dlog.push(x.id + ':' + (p ? 'live ' + p.price + (x.pr && x.pr != p.price ? ' !=csv ' + x.pr : '') : 'csv ' + x.pr + ' [' + ((K.why || {})[x.id] || '?') + ']'));
+        if (p && !p.img && x.im) p.img = x.im;   // the product's own catalogue photo
         if (p || !x.pr || (K.gone || {})[x.id]) return p;   // catalogue fallback only for a temporary fetch failure
         var q = { id: String(x.id), name: x.t, price: x.pr, img: x.im || '', url: '/items/' + x.id, fb: 1 }; K.byId[q.id] = q; return q;
       }); })).then(function (l) { if (dbg) { var o = D.getElementById('sgdbg') || D.body.appendChild(D.createElement('pre')); o.id = 'sgdbg'; o.style.cssText = 'position:fixed;bottom:0;left:0;z-index:2147483647;background:#fff;font:11px monospace;max-height:40vh;overflow:auto;margin:0;padding:6px'; o.textContent = 'v3\n' + dlog.join('\n'); } return l; }); };
