@@ -1926,11 +1926,21 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
             var ln = [].filter.call(d.querySelectorAll('a[href]'), function (a) { return /\/items\/(\d+)/.test(a.getAttribute('href')) && itemId(a.getAttribute('href')) === id && a.closest('tr'); })[0];
             if (!ln) return 0; var c = ln.closest('tr').querySelector('td'); return c ? parseInt((c.textContent.match(/\d+/) || ['0'])[0], 10) || 0 : 0; };
           var cartOpen = function () { return [].some.call(d.querySelectorAll('div,span'), function (e) { return e.children.length < 3 && /^\s*סה"כ/.test(e.textContent); }); };
+          var rowOf = function () {
+            var ln = [].filter.call(d.querySelectorAll('a[href]'), function (a) { return /\/items\/(\d+)/.test(a.getAttribute('href')) && itemId(a.getAttribute('href')) === id && a.closest('tr'); })[0];
+            return ln ? ln.closest('tr') : null; };
           var go = function (q) {
-            var want = q + 1;
-            [].forEach.call(counters, function (inp) { inp.value = want; ['input', 'change', 'keyup'].forEach(function (ev) { inp.dispatchEvent(new Event(ev, { bubbles: true })); }); });
-            b.click();
-            var t0 = Date.now(), chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (s1.t > s0.t && s0.t > 0) || (q > 0 && qtyInCart() > q)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 7000) { clearInterval(chk); fin(n0 < 0); } }, 300);
+            var t0 = Date.now(), chk;
+            if (q > 0) {
+              // already in the cart: use Konimbo's own "+1" on that cart line (never type into the quantity field)
+              var row = rowOf(), plus = row && [].filter.call(row.querySelectorAll('button,a,span,div'), function (e) { var l = (e.getAttribute('aria-label') || e.getAttribute('title') || '').trim(); return /^הוספת 1/.test(l) || (!l && e.children.length === 0 && e.textContent.trim() === '+'); })[0];
+              if (!plus) return fin(false);
+              plus.click();
+            } else {
+              [].forEach.call(counters, function (inp) { if (!(+inp.value > 0)) { inp.value = 1; ['input', 'change'].forEach(function (ev) { inp.dispatchEvent(new Event(ev, { bubbles: true })); }); } });
+              b.click();
+            }
+            chk = setInterval(function () { var s1 = sig(); if ((n0 > -1 && s1.n > n0) || (q > 0 && qtyInCart() > q)) { clearInterval(chk); fin(true); } else if (Date.now() - t0 > 7000) { clearInterval(chk); fin(n0 < 0); } }, 300);
           };
           if (!cl || n0 <= 0) return go(0);            // empty cart: nothing to read
           try { cl.click(); } catch (e) { return go(0); }
