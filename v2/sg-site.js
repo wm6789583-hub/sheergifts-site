@@ -2109,7 +2109,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       var v = view(), part = v.slice(0, st.shown);
       grid.innerHTML = part.length ? part.map(card).join('') : '<p class="pg-empty">' + (done ? 'אין מוצרים בטווח שנבחר.' : 'טוענים מוצרים…') + '</p>';
       var tot = v.length;   // what is actually listed (Konimbo's 'תוצאות' figure is not per-category)
-      $('.pg-cnt').innerHTML = 'נמצאו <b>' + tot + '</b> מוצרים' + (!done ? '<small> · טוענים עוד…</small>' : '');
+      $('.pg-cnt').innerHTML = 'נמצאו <b>' + tot + (done && !ended && list.length >= 480 ? '+' : '') + '</b> מוצרים' + (!done ? '<small> · טוענים עוד…</small>' : '');
       side.querySelector('.pg-show').textContent = 'הצגת ' + v.length + ' מוצרים';
       $('.pg-more').innerHTML = v.length > st.shown ? '<button type="button" class="pg-mb">להציג עוד ' + Math.min(24, v.length - st.shown) + ' מוצרים</button>' : '';
     }
