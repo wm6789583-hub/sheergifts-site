@@ -2118,6 +2118,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     bounds(); liveHero(); draw();
     /* the rest of the category: Konimbo's own next pages (?page=N), 12 per page */
     var pg = 2, base0 = location.pathname + location.search, busy = 0, ended = false, CAP = 40;
+    var PS = Math.max(12, list.length);
     var TOTAL = (function () { var m = (D.querySelector('.sg-k') || D.body).textContent.match(/תוצאות\s*:?\s*(\d+)/); return m ? +m[1] : 0; })();
     if (TOTAL && list.length >= TOTAL) ended = true;
     function nextUrl(n) { var u = new URL(base0, location.href); u.searchParams.set('page', n); u.searchParams.delete('sgraw'); return u.pathname + u.search; }
@@ -2125,7 +2126,11 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       while (!ended && busy < 3 && pg <= CAP) (function (n) {
         busy++;
         fetch(nextUrl(n), { credentials: 'same-origin' }).then(function (r) { if (!r.ok || r.redirected || new URL(r.url).pathname !== location.pathname) return ''; return r.text(); }).then(function (html) {
-          var add = html ? S.scrapeCards(new DOMParser().parseFromString(html, 'text/html')) : [], fresh = 0;
+          var dd = html ? new DOMParser().parseFromString(html, 'text/html') : null, hh = dd && dd.querySelector('h1');
+          // a real next page of THIS category: same heading, no more cards than Konimbo's page size
+          var ok = dd && hh && hh.textContent.replace(/\s+/g, ' ').trim() === (h1 ? h1.textContent.replace(/\s+/g, ' ').trim() : '');
+          var add = ok ? S.scrapeCards(dd) : [], fresh = 0;
+          if (add.length > PS) add = [];
           add.forEach(function (p) { p.id = String(p.id); p.add = null; if (!by[p.id]) { p.o = n * 100 + fresh; by[p.id] = p; list.push(p); fresh++; } });
           if (!fresh || (TOTAL && list.length >= TOTAL)) ended = true;
         }).catch(function () { ended = true; }).then(function () {
