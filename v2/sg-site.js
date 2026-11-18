@@ -601,11 +601,17 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   var CUTS = [[/Amazonia/i, 'amazonia'], [/Dot Delight/i, 'teapot'], [/Pip Studio/i, 'pipplate'], [/Ivoire/i, 'ivoire'], [/גלאסיאר/, 'glacier'], [/סט הבדלה אקריליק/, 'havdalah'], [/מגש לנרות שבת עם מג/, 'candletray'], [/עציץ טוליפים/, 'tulips'], [/נטלה אקריליק נצנץ/, 'netilla']];
   var cutMem = {}, itemMem = {};
   /* one product by id, read from its own Konimbo page (name, current price, main photo) */
+  var qN = 0, qL = [];
+  function qRun() { while (qN < 3 && qL.length) { var j = qL.shift(); qN++; j(); } }
+  function qFetch(u) { return new Promise(function (res) {
+    var tries = 0, go = function () { tries++; fetch(u, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }).then(function (t) {
+      qN--; if (!t && tries < 3) { setTimeout(function () { qL.push(go); qRun(); }, 400 * tries); } else res(t); qRun(); }); };
+    qL.push(go); qRun(); }); }
   K.item = function (id) {
     id = String(id); if (itemMem[id]) return itemMem[id];
     if (K.byId[id]) return (itemMem[id] = Promise.resolve(K.byId[id]));
     if (W.SG_MOCK_ITEM) return (itemMem[id] = Promise.resolve(W.SG_MOCK_ITEM(id)));
-    return (itemMem[id] = fetch('/items/' + id, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
+    return (itemMem[id] = qFetch('/items/' + id).then(function (html) {
       if (!html) return null;
       var S = W.SG, d = new DOMParser().parseFromString(html, 'text/html'), h1 = d.querySelector('h1'); if (!h1) return null;
       var title = h1.textContent.replace(/\s+/g, ' ').trim(), add = S.findByText(d.body, 'הוסף לעגלה') || S.findByText(d.body, 'הוספה לסל'), buy = add;
