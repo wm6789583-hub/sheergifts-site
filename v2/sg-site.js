@@ -612,17 +612,17 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     if (K.byId[id]) return (itemMem[id] = Promise.resolve(K.byId[id]));
     if (W.SG_MOCK_ITEM) return (itemMem[id] = Promise.resolve(W.SG_MOCK_ITEM(id)));
     return (itemMem[id] = qFetch('/items/' + id).then(function (html) {
-      if (!html) return null;
-      var S = W.SG, d = new DOMParser().parseFromString(html, 'text/html'), h1 = d.querySelector('h1'); if (!h1) return null;
+      K.why = K.why || {}; if (!html) { K.why[id] = 'nohtml'; return null; }
+      var S = W.SG, d = new DOMParser().parseFromString(html, 'text/html'), h1 = d.querySelector('h1'); if (!h1) { K.why[id] = 'noh1 ' + html.length; return null; }
       var title = h1.textContent.replace(/\s+/g, ' ').trim(), add = S.findByText(d.body, 'הוסף לעגלה') || S.findByText(d.body, 'הוספה לסל'), buy = add;
       while (buy && buy.parentElement && !/₪/.test(buy.textContent)) buy = buy.parentElement;
       var upH = [].filter.call(d.querySelectorAll('h3,h4,h5'), function (h) { return /לשדרג/.test(h.textContent); })[0], ups = upH && upH.parentElement;
       if (buy && ups && buy.contains(ups)) { var b2 = add; while (b2.parentElement && !b2.parentElement.contains(ups)) b2 = b2.parentElement; buy = b2; }
       var pr = buy ? S.pricesIn(buy) : [], im = [].filter.call(d.querySelectorAll('img'), function (i) { return (i.alt || '').trim() === title; })[0];
       var p = { id: id, name: title, price: pr.length ? pr[pr.length - 1] : 0, img: im ? (im.getAttribute('data-zoom-image') || im.getAttribute('data-src') || im.getAttribute('src')) : '', url: '/items/' + id };
-      if (!(p.price > 0)) return null;      // no price on the page: not purchasable, no hotspot
+      if (!(p.price > 0)) { K.why[id] = 'noprice ' + pr.join('/') + ' ' + !!add; return null; }      // no price on the page: not purchasable, no hotspot
       K.byId[id] = p; return p;
-    }).catch(function () { return null; }));
+    }).catch(function (e) { (K.why = K.why || {})[id] = 'err ' + e; return null; }));
   };
   K.imgBase = function () { var l = D.querySelector('.sg-hdr .sg-logo img'); return W.SG_IMG_BASE || (l ? l.src.replace(/logo\.webp.*$/, '') : ''); };
   K.cut = function (p) {
@@ -1623,10 +1623,10 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       if (busy || (K.ready() < 7 && !(PH.hero && PH.table))) return; busy = true;
       var dbg = /[?&]sgdbg=1/.test(location.search), dlog = [];
       var byIds = function (sp) { return Promise.all((sp || []).map(function (x) { return K.item(x.id).then(function (p) {
-        if (dbg) dlog.push(x.id + ':' + (p ? 'live ' + p.price : (x.pr ? 'csv ' + x.pr : 'none')));
+        if (dbg) dlog.push(x.id + ':' + (p ? 'live ' + p.price : 'csv ' + x.pr + ' [' + ((K.why || {})[x.id] || '?') + ']'));
         if (p || !x.pr) return p;
         var q = { id: String(x.id), name: x.t, price: x.pr, img: x.im || '', url: '/items/' + x.id, fb: 1 }; K.byId[q.id] = q; return q;
-      }); })).then(function (l) { if (dbg) { var o = D.getElementById('sgdbg') || D.body.appendChild(D.createElement('pre')); o.id = 'sgdbg'; o.style.cssText = 'position:fixed;bottom:0;left:0;z-index:2147483647;background:#fff;font:11px monospace;max-height:40vh;overflow:auto;margin:0;padding:6px'; o.textContent = dlog.join('\n'); } return l; }); };
+      }); })).then(function (l) { if (dbg) { var o = D.getElementById('sgdbg') || D.body.appendChild(D.createElement('pre')); o.id = 'sgdbg'; o.style.cssText = 'position:fixed;bottom:0;left:0;z-index:2147483647;background:#fff;font:11px monospace;max-height:40vh;overflow:auto;margin:0;padding:6px'; o.textContent = 'v3\n' + dlog.join('\n'); } return l; }); };
       Promise.all([PH.kids ? byIds(PH.kids.spots) : [], PH.studio ? byIds(PH.studio.spots) : []]).then(function (r) { kidsSpot = r[0]; studioSpot = r[1]; kidsRender(); boxRender(); });
       Promise.all([PH.hero ? byIds(PH.hero.spots) : resolve(HERO, false), PH.table ? (mock ? resolve(TABLE, true) : byIds(PH.table.spots).then(function (l) { return l.map(function (p) { return p ? { p: p } : null; }); })) : resolve(TABLE, true), PH.studio ? Promise.resolve([]) : resolve(BOX, false)]).then(function (r) {
         if (PH.hero) heroSpot = r[0]; else hero = r[0];
