@@ -1802,7 +1802,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       $('.hL-pg').innerHTML = rows.filter(function (r) { return r.ps.length >= 2; }).map(function (r, i) {
         var tot = r.ps.reduce(function (s, p) { return s + p.price; }, 0);
         return '<a class="hL-pc" href="/?sg=pkg&id=' + esc(r.k.id) + '" data-rv style="--d:' + i + '"><span class="hL-pm n' + Math.min(4, r.ps.length) + '">' + r.ps.slice(0, 4).map(function (p) { return '<img src="' + esc(P.big(p.img)) + '" alt="" loading="lazy">'; }).join('') + '</span>' +
-          '<span class="hL-pt"><small>' + esc(r.k.kicker || '') + '</small><b>' + esc(r.k.title) + '</b><span>' + r.ps.length + ' פריטים · ' + (r.all ? 'החל מ־' : '') + '<em class="num">' + fmt(tot) + ' ₪</em></span></span></a>';
+          '<span class="hL-pt"><small>' + esc(r.k.kicker || '') + '</small><b>' + esc(r.k.title) + '</b><span>' + r.ps.length + ' פריטים · מחיר המארז ' + '<em class="num">' + fmt(tot) + ' ₪</em></span></span></a>';
       }).join('');
       reveal($('.hL-pg'));
     }).catch(function () { $('.hL-pk').hidden = true; });
