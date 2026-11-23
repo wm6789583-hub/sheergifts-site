@@ -2752,11 +2752,11 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           '<ul class="sg-cl-pts"><li>קולקציות חדשות</li><li>מארזים לחגים</li><li>השראה למתנות</li></ul></div><div class="sg-cl-form"></div>';
         cw.querySelector('.sg-cl-form').appendChild(box); box.classList.add('sg-club');
         // Konimbo's own fields and button, unchanged in name and action: only labelled and arranged
-        var ph = { text: 'השם שלך', number: 'טלפון נייד', tel: 'טלפון נייד', email: 'כתובת מייל' };
+        var ph = { text: 'לדוגמה: רחל כהן', number: '05X-XXXXXXX', tel: '05X-XXXXXXX', email: 'name@example.com' }, al = { text: 'שם', number: 'טלפון', tel: 'טלפון', email: 'מייל' };
         [].forEach.call(box.querySelectorAll('input'), function (i) {
           var w = i.parentElement; if (i.type === 'checkbox') { w.classList.add('sg-cl-cons'); return; }
           w.classList.add('sg-cl-f'); var t = /מייל/.test(w.textContent + (i.name || '')) ? 'email' : i.type;
-          if (!i.placeholder) i.placeholder = ph[t] || ''; if (i.type === 'number') i.setAttribute('inputmode', 'tel');
+          i.placeholder = ph[t] || ''; if (al[t]) i.setAttribute('aria-label', al[t]); if (i.type === 'number') i.setAttribute('inputmode', 'tel');
           i.setAttribute('autocomplete', t === 'email' ? 'email' : i.type === 'number' ? 'tel' : 'name');
         });
         var bt = box.querySelector('button, input[type=submit]'); if (bt) { bt.classList.add('sg-cl-btn'); if (bt.tagName === 'BUTTON' && !bt.children.length) bt.textContent = 'הצטרפות למועדון'; }
