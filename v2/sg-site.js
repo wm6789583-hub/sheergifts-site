@@ -1706,6 +1706,102 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       D.body.appendChild(f);
     });
   };
+  /* remove EVERY cart line of one product (all its upgrade variants), line by line, with Konimbo's own "הסרת המוצר" */
+  G.cartPurge = function (id) {
+    id = String(id);
+    return new Promise(function (res) {
+      var f = D.createElement('iframe'); f.style.cssText = 'position:fixed;width:10px;height:10px;left:-50px;top:0;opacity:0;pointer-events:none'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+      f.src = '/?sgraw=1'; var done = false, fin = function (r) { if (done) return; done = true; setTimeout(function () { f.remove(); }, 400); res(r); };
+      f.onload = function () {
+        try {
+          var d = f.contentDocument, cl = d.querySelector('a[href*="/orders/"]'), n0 = cl ? parseInt(cl.textContent.replace(/\D/g, ''), 10) || 0 : 0;
+          if (!cl || !n0) return fin(true);
+          try { f.contentWindow.confirm = function () { return true; }; } catch (e) {}
+          var rows = function () { return [].filter.call(d.querySelectorAll('tr'), function (tr) { var a = tr.querySelector('a[href*="/items/"]'); return a && W.SG.itemId(a.getAttribute('href')) === id; }); };
+          var opened = function () { return [].some.call(d.querySelectorAll('tr'), function (tr) { return tr.querySelector('a[href*="/items/"]'); }); };
+          cl.click(); var t0 = Date.now(), w = setInterval(function () { if (opened() || Date.now() - t0 > 5000) { clearInterval(w); if (!opened()) return fin(false); step(); } }, 200);
+          function step() {
+            var r = rows(); if (!r.length) return fin(true);
+            var b = [].filter.call(r[0].querySelectorAll('button,a,span,div,i'), function (e) { return /^הסרת המוצר/.test((e.getAttribute('aria-label') || e.getAttribute('title') || '').trim()); })[0];
+            if (!b) return fin(false);
+            var k = r.length; b.click(); var t1 = Date.now(), c = setInterval(function () { if (rows().length < k) { clearInterval(c); step(); } else if (Date.now() - t1 > 7000) { clearInterval(c); fin(false); } }, 250);
+          }
+        } catch (e) { fin(false); }
+      };
+      setTimeout(function () { fin(false); }, 40000);
+      D.body.appendChild(f);
+    });
+  };
+  /* put one product in Konimbo's cart with its upgrade fields filled in — the store's own product form, in a hidden frame.
+     fields: [[/label pattern/, value], …] matched against each field's label; a select takes the option whose text contains the value.
+     Resolves {ok, line} where line is the new cart line's text, so the caller can check the details really arrived. */
+  G.addWithFields = function (url, fields) {
+    return new Promise(function (res) {
+      var f = D.createElement('iframe'); f.style.cssText = 'position:fixed;width:10px;height:10px;left:-50px;top:0;opacity:0;pointer-events:none'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+      f.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'sgraw=1';
+      var done = false, fin = function (r) { if (done) return; done = true; setTimeout(function () { f.remove(); }, 800); res(r); };
+      f.onload = function () {
+        try {
+          var d = f.contentDocument, fw = f.contentWindow;
+          var labelOf = function (el) {
+            var t = el.getAttribute('aria-label') || '';
+            if (!t && el.id) { var l = d.querySelector('label[for="' + el.id + '"]'); if (l) t = l.textContent; }
+            for (var p = el.parentElement, k = 0; !t.replace(/מלאו טקסט חופשי:?/, '').trim() && p && k < 4; p = p.parentElement, k++) t = p.textContent.replace(el.value || '', '');
+            return t.replace(/מלאו טקסט חופשי:?/g, '').replace(/\s+/g, ' ').trim();
+          };
+          var set = function (el, v) { var proto = el.tagName === 'TEXTAREA' ? fw.HTMLTextAreaElement.prototype : fw.HTMLInputElement.prototype, s = Object.getOwnPropertyDescriptor(proto, 'value').set; s.call(el, v); ['input', 'change', 'keyup', 'blur'].forEach(function (ev) { el.dispatchEvent(new fw.Event(ev, { bubbles: true })); }); };
+          var form = d.querySelector('.commit_to_real') ? d.querySelector('.commit_to_real').closest('form') || d.body : d.body;
+          var els = [].filter.call(form.querySelectorAll('input[type=text], input:not([type]), textarea, select'), function (e) { return !e.closest('header,footer,.sg-k nav') && !/חפש|search/i.test((e.name || '') + (e.placeholder || '')) && !(e.closest('form') && /club|newsletter|מועדון/i.test(e.closest('form').textContent.slice(0, 200))); });
+          var miss = [];
+          fields.forEach(function (fv) {
+            var el = els.filter(function (e) { return fv[0].test(labelOf(e)); })[0]; if (!el) { miss.push(String(fv[0])); return; }
+            if (el.tagName === 'SELECT') { var o = [].filter.call(el.options, function (o) { return o.text.indexOf(fv[1]) > -1; })[0]; if (!o) { miss.push(String(fv[0])); return; } el.value = o.value; el.dispatchEvent(new fw.Event('change', { bubbles: true })); }
+            else set(el, String(fv[1] || '—').slice(0, 2000));
+          });
+          if (miss.length) return fin({ ok: false, why: 'שדות חסרים במוצר: ' + miss.join(', ') });
+          var cnt = d.querySelector('input.counter, input.fake_counter'); if (cnt && !(+cnt.value > 0)) { var plus = [].filter.call(cnt.parentElement.parentElement.querySelectorAll('*'), function (e) { return !e.children.length && e.textContent.trim() === '+'; })[0]; plus ? plus.click() : set(cnt, '1'); }
+          var cl = d.querySelector('a[href*="/orders/"]'), n0 = cl ? parseInt(cl.textContent.replace(/\D/g, ''), 10) || 0 : 0;
+          var b = d.querySelector('.commit_to_real') || [].filter.call(d.querySelectorAll('span,div,button,a'), function (e) { return !e.children.length && /^הוסף לעגלה|^הוספה לסל/.test(e.textContent.trim()); })[0];
+          if (!b) return fin({ ok: false, why: 'אין כפתור הוספה' });
+          b.click();
+          var t0 = Date.now(), iv = setInterval(function () {
+            var c2 = d.querySelector('a[href*="/orders/"]'), n1 = c2 ? parseInt(c2.textContent.replace(/\D/g, ''), 10) || 0 : 0;
+            if (n1 > n0) { clearInterval(iv); var id = W.SG.itemId(url), line = [].filter.call(d.querySelectorAll('tr'), function (tr) { var a = tr.querySelector('a[href*="/items/"]'); return a && W.SG.itemId(a.getAttribute('href')) === id; }).map(function (tr) { return tr.textContent.replace(/\s+/g, ' '); }).join(' | '); fin({ ok: true, line: line }); }
+            else if (Date.now() - t0 > 8000) { clearInterval(iv); fin({ ok: false, why: 'העגלה לא התעדכנה' }); }
+          }, 300);
+        } catch (e) { fin({ ok: false, why: String(e) }); }
+      };
+      setTimeout(function () { fin({ ok: false, why: 'timeout' }); }, 20000);
+      D.body.appendChild(f);
+    });
+  };
+  /* the gift's details as the packaging product's upgrade fields (labels as created in Konimbo) */
+  G.packFields = function (g) {
+    var s = g.ship || {}, to = g.to || {}, items = g.items.map(function (i) { return '• ' + i.name + ' ×' + (i.qty || 1) + (i.role === 'שדרוג' ? ' [שדרוג]' : ''); }).join('\n');
+    return [
+      [/פריטי המתנה|תכולת המתנה/, items],
+      [/סוג אריזה|^אריזה/, (G.WRAP && G.WRAP[g.wrap]) || (g.wrap === 'cello' ? 'צלופן פתוח' : 'קופסה שקופה')],
+      [/סרט/, (G.RIB || {})[g.rib || 'cream'] || 'סרט שמנת'],
+      [/ברכה/, g.note || 'ללא ברכה'],
+      [/שם המקבל/, to.name || '—'],
+      [/טלפון המקבל/, to.phone || '—'],
+      [/משלוח|איסוף/, s.mode === 'ship' ? ('משלוח: ' + [s.address, s.city].filter(Boolean).join(', ')) : 'איסוף עצמי מהחנות'],
+      [/תאריך/, s.date || 'לא צוין']
+    ];
+  };
+  /* test environment only: /?sg=packtest — fills a real product's text upgrades automatically, reads the cart line back, then removes it */
+  G.packTest = function (root) {
+    var out = D.createElement('pre'); out.style.cssText = 'direction:rtl;white-space:pre-wrap;padding:24px;font:14px/1.6 Heebo,sans-serif'; root.innerHTML = ''; root.appendChild(out);
+    var log = function (s) { out.textContent += s + '\n'; };
+    var url = '/items/6602784', id = '6602784';
+    log('1) הוספת מוצר עם שדות טקסט שממולאים אוטומטית…');
+    G.addWithFields(url, [[/GIFT CARD/, 'שווי 50'], [/למי מיועד/, 'בשביל מישהו אחר'], [/ברכה/, 'בדיקה אוטומטית — מזל טוב!\nשורה שנייה'], [/מייל/, 'test@example.com']]).then(function (r) {
+      log(r.ok ? '✓ נוסף לעגלה. שורת העגלה: ' + r.line : '✗ ' + r.why);
+      log('2) הסרת כל שורות המוצר מהעגלה…');
+      return G.cartPurge(id);
+    }).then(function (ok) { log(ok ? '✓ הוסר. העגלה חזרה למצבה.' : '✗ ההסרה נכשלה'); return G.readCart(); })
+      .then(function (c) { log('3) בעגלה כעת: ' + c.n + ' פריטים, ' + c.lines.filter(function (l) { return l.id === id; }).length + ' שורות של מוצר הבדיקה.'); });
+  };
   /* bring Konimbo's cart in line with the gifts: units of removed gifts, or of items taken out of / lowered in a gift
      after it was already put in the cart, are taken out of the cart again. Personal items are never touched. */
   G.syncGifts = function (say) {
@@ -1829,6 +1925,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   /* =================== pages =================== */
   W.SGGiftPages = function (root, type) {
     if (type === 'audit') return G.audit(root);
+    if (type === 'packtest') return G.packTest(root);
     var P = W.SGPages, fw = P.shell(root, 'gp gpv-' + type);
     D.documentElement.classList.add('sg-gp');
     if (type === 'gifts') catalogue(fw);
@@ -1981,6 +2078,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           var go = e.target.closest('.gp-go,.gp-asis');
           if (go && lines.length) {
             var items = lines.map(function (l) { return G.gi(l.p, { qty: l.qty, role: l.role }); });
+            var cg = St.cur(); if (W.SG_ONE_GIFT && cg.items.length && !W.confirm('המתנה שבהרכבה (' + St.count(cg) + ' פריטים) תוחלף במארז "' + def.title + '". להמשיך?')) return;
             St.newGift(def.title, items, { id: def.id, title: def.title, occasion: def.occasion, wrap: wrap, basePrice: basePrice, base: base.filter(function (b) { return b.p; }).map(function (b) { return { id: b.id, price: b.p.price, qty: b.qty, role: b.role }; }), total: total(), changes: changes() });
             St.setWrap(wrap);
             location.href = go.classList.contains('gp-go') ? '/?sg=studio' : '/?sg=cart';
@@ -2040,7 +2138,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     }
     function draw() {
       var gs = St.gifts().filter(function (x) { return x.items.length; });
-      $('.gp-gifts').innerHTML = (gs.length ? '<h2 class="gp-sec">המתנות שלי</h2>' + gs.map(giftHTML).join('') : '<p class="gp-none">אין כרגע מתנות בסל. אפשר להרכיב מתנה מכל מוצר בחנות, או לבחור מארז מוכן.</p>') + '<div class="gp-addg"><a class="gp-b ghost" href="/?sg=gifts">＋ מתנה נוספת ממארז מוכן</a><button type="button" class="gp-b ghost" data-newg>＋ מתנה חדשה בסטודיו</button></div>';
+      $('.gp-gifts').innerHTML = (gs.length ? '<h2 class="gp-sec">המתנות שלי</h2>' + gs.map(giftHTML).join('') : '<p class="gp-none">אין כרגע מתנות בסל. אפשר להרכיב מתנה מכל מוצר בחנות, או לבחור מארז מוכן.</p>') + (W.SG_ONE_GIFT ? (gs.length ? '' : '<div class="gp-addg"><a class="gp-b ghost" href="/?sg=gifts">מארזים מוכנים</a><a class="gp-b ghost" href="/?sg=studio">להרכבת מתנה בסטודיו</a></div>') : '<div class="gp-addg"><a class="gp-b ghost" href="/?sg=gifts">＋ מתנה נוספת ממארז מוכן</a><button type="button" class="gp-b ghost" data-newg>＋ מתנה חדשה בסטודיו</button></div>');
       side();
     }
     fw.addEventListener('input', function (e) {
@@ -2063,6 +2161,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       var stx = $('.gp-pst');
       if (bad.length) { stx.textContent = 'כדי להמשיך יש להשלים את הפרטים המסומנים במתנה ' + (gs.indexOf(bad[0]) + 1) + '.'; var el = fw.querySelector('[data-g="' + bad[0].gid + '"]'); el && el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       btn.disabled = true; stx.textContent = 'בודקים את עגלת החנות…';
+      if (W.SG_PACK && !gs.length) { G.cartPurge(W.SG_PACK.id).then(function () { btn.disabled = false; var a = D.querySelector('.sg-k a[href*="/orders/"]'); if (a) location.href = a.href; }); return; }   // no gift: only the store's regular items go on
       G.syncGifts(function (t) { stx.textContent = t; }).then(function (synced) {
       if (!synced) { btn.disabled = false; stx.textContent = 'לא הצלחנו לעדכן את עגלת החנות לפי השינויים במתנות. נסו שוב בעוד רגע.'; return; }
       G.readCart().then(function (c) {
@@ -2089,11 +2188,26 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
             gs.forEach(function (g) { g.items.forEach(function (i) { need[i.id] = (need[i.id] || 0) + (i.qty || 1); }); });
             var miss = Object.keys(need).filter(function (id) { return (have[id] || 0) < need[id]; });
             if (!c2.ok || miss.length) { $('.gp-pst').textContent = 'עגלת החנות לא תואמת את המתנות (' + miss.length + ' מוצרים חסרים). לא מעבירים לקופה — נסו שוב.'; return; }
-            handover(c2.href || (D.querySelector('.sg-k a[href*="/orders/"]') || {}).href, c2);
+            var href = c2.href || (D.querySelector('.sg-k a[href*="/orders/"]') || {}).href;
+            if (!W.SG_PACK) return handover(href, c2);
+            packStep(gs, href, c2);
           });
         }
       });
       });
+    }
+    /* one gift: its packaging line is rebuilt every time (old details removed first), then checked in the cart */
+    function packStep(gs, href, c2) {
+      var stx = $('.gp-pst'), P = W.SG_PACK, g = gs[0];
+      stx.textContent = 'מצרפים את פרטי האריזה והברכה…';
+      G.cartPurge(P.id).then(function (ok) {
+        if (!ok) throw 'purge';
+        return G.addWithFields(P.url || '/items/' + P.id, G.packFields(g));
+      }).then(function (r) {
+        if (!r.ok || r.line.indexOf((g.note || 'ללא ברכה').split('\n')[0].slice(0, 20)) < 0) throw (r.why || 'check');
+        stx.textContent = '';
+        var b = sheet('המתנה מוכנה לתשלום', '<p class="gp-ok">✓ כל ' + St.count(g) + ' פריטי המתנה, האריזה והברכה נמצאים בעגלת החנות.</p><p>בקופה משלמים כרגיל. אין צורך להעתיק או להקליד שום דבר.</p><div class="gp-act"><a class="gp-b" href="' + esc(href || '#') + '">לתשלום בקופה ←</a></div>');
+      }).catch(function () { stx.textContent = 'לא הצלחנו לצרף את פרטי האריזה. נסו שוב בעוד רגע.'; });
     }
     function summaryText() { return G.slip(St.gifts().filter(function (g) { return g.items.length; }), personal()); }
     function handover(href, c2) {
@@ -2331,7 +2445,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           '<label class="st-sh">עיר<input data-f="ship.city"></label><label class="st-sh">רחוב, מספר, דירה<input data-f="ship.address"></label>' +
           '<label>תאריך מבוקש<input type="date" data-f="ship.date"></label>' +
         '</section>' +
-        '<div class="gp-act"><a class="gp-b" href="/?sg=cart">שמירת המתנה ומעבר לסל</a><button type="button" class="gp-b ghost st-newg">＋ מתנה נוספת</button></div>' +
+        '<div class="gp-act"><a class="gp-b" href="/?sg=cart">שמירת המתנה ומעבר לסל</a>' + (W.SG_ONE_GIFT ? '' : '<button type="button" class="gp-b ghost st-newg">＋ מתנה נוספת</button>') + '</div>' +
         '<p class="gp-fine">כל מתנה נשמרת בנפרד בדפדפן הזה עד התשלום. הפריטים נכנסים לעגלת החנות בשלב "המשך לתשלום" בסל המתנות.</p>' +
       '</section></div></div>';
     var $ = function (s) { return fw.querySelector(s); };
@@ -2339,7 +2453,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
 
     function g() { return St.cur(); }
     function tabs() {
-      $('.st-tabs').innerHTML = St.gifts().map(function (x, k) { return '<button type="button" data-tab="' + x.gid + '" aria-pressed="' + (x.gid === g().gid) + '"><b>' + esc(x.title || 'מתנה ' + (k + 1)) + '</b><small>' + (x.items.length ? W.SGCountLabel(St.count(x)) + ' · ' + fmt(St.total(x)) + ' ₪' : 'ריקה') + '</small></button>'; }).join('') + '<button type="button" class="st-tadd" data-tabnew>＋ מתנה חדשה</button>';
+      if (W.SG_ONE_GIFT) { $('.st-tabs').hidden = true; } else $('.st-tabs').innerHTML = St.gifts().map(function (x, k) { return '<button type="button" data-tab="' + x.gid + '" aria-pressed="' + (x.gid === g().gid) + '"><b>' + esc(x.title || 'מתנה ' + (k + 1)) + '</b><small>' + (x.items.length ? W.SGCountLabel(St.count(x)) + ' · ' + fmt(St.total(x)) + ' ₪' : 'ריקה') + '</small></button>'; }).join('') + '<button type="button" class="st-tadd" data-tabnew>＋ מתנה חדשה</button>';
     }
     function details() {
       var x = g();
@@ -2439,6 +2553,9 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   if (W.__SG2) return; W.__SG2 = 1;
   if (/[?&]sgraw=1/.test(location.search)) { D.documentElement.classList.remove('sg-wait'); return; }            // raw Konimbo page (used by the studio's add-to-cart frames)
   var IMG = W.SG_IMG_BASE || '';
+  if (W.SG_ONE_GIFT == null) W.SG_ONE_GIFT = true;   // stage 1: one gift per order
+  /* the store's "gift packaging" product (0 ₪, hidden from the catalogue, its upgrades are text fields): {id:'1234567'} once it exists in Konimbo */
+  if (W.SG_PACK === undefined) W.SG_PACK = null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var fmt = function (n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
   var num = function (s) { return parseFloat(String(s).replace(/[^\d.]/g, '')) || 0; };
@@ -2461,6 +2578,11 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         b.gifts.push(g); b.active = g.gid;
       }
       if (!b.gifts.length) { var g2 = blank('המתנה הראשונה'); b.gifts.push(g2); b.active = g2.gid; }
+      if (W.SG_ONE_GIFT && b.gifts.length > 1) {   // one gift per order: keep the active gift; the others' cart units are taken out at the next sync
+        var keep = b.gifts.filter(function (g) { return g.gid === b.active && g.items.length; })[0] || b.gifts.filter(function (g) { return g.items.length; })[0] || b.gifts[0];
+        b.orphan = b.orphan || {}; b.gifts.forEach(function (g) { if (g !== keep) Object.keys(g.pushed || {}).forEach(function (k) { b.orphan[k] = (b.orphan[k] || 0) + g.pushed[k]; }); });
+        b.gifts = [keep]; b.active = keep.gid; try { localStorage.setItem(KEY, JSON.stringify(b)); } catch (e) {}
+      }
       this.book = b; this.pick();
     },
     pick: function () { var b = this.book, a = b.gifts.filter(function (g) { return g.gid === b.active; })[0] || b.gifts[0]; b.active = a.gid; this.items = a.items; this.wrap = a.wrap; return a; },
@@ -2481,7 +2603,8 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     count: function (g) { return (g ? g.items : this.items).reduce(function (s, i) { return s + (i.qty || 1); }, 0); },
     countAll: function () { var self = this; return this.book.gifts.reduce(function (s, g) { return s + self.count(g); }, 0); },
     newGift: function (title, items, pkg) { var g = blank(title); g.items = (items || []).map(function (i) { i.qty = i.qty || 1; return i; }); g.pkg = pkg || null; if (pkg && pkg.wrap) g.wrap = pkg.wrap;
-      var a = this.cur(); if (!a.items.length && !a.note && !a.to.name) this.book.gifts = this.book.gifts.filter(function (x) { return x !== a; });   // reuse an untouched empty gift
+      var a = this.cur(), bk = this.book; if (!a.items.length && !a.note && !a.to.name) this.book.gifts = this.book.gifts.filter(function (x) { return x !== a; });   // reuse an untouched empty gift
+      if (W.SG_ONE_GIFT) { bk.orphan = bk.orphan || {}; bk.gifts.forEach(function (x) { Object.keys(x.pushed || {}).forEach(function (k) { bk.orphan[k] = (bk.orphan[k] || 0) + x.pushed[k]; }); }); bk.gifts = []; }   // one gift per order: the new gift replaces the old one
       this.book.gifts.push(g); this.book.active = g.gid; this.pick(); this.save(); return g; },
     activate: function (id) { this.book.active = id; this.pick(); this.save(); },
     drop: function (id) { var bk = this.book; bk.orphan = bk.orphan || {}; bk.gifts.forEach(function (g) { if (g.gid === id) Object.keys(g.pushed || {}).forEach(function (k) { bk.orphan[k] = (bk.orphan[k] || 0) + g.pushed[k]; }); });   /* units this gift already put in Konimbo's cart: removed from the cart at the next sync */
@@ -2641,7 +2764,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   /* ---------------- page type ---------------- */
   var path = decodeURIComponent(location.pathname);
   var q = new URLSearchParams(location.search);
-  var SGR = { studio: 'studio', gifts: 'gifts', pkg: 'pkg', cart: 'gcart', budget: 'budget', fav: 'fav', audit: 'audit' };
+  var SGR = { studio: 'studio', gifts: 'gifts', pkg: 'pkg', cart: 'gcart', budget: 'budget', fav: 'fav', audit: 'audit', packtest: 'packtest' };
   var type = W.SG_FORCE_TYPE || (SGR[q.get('sg')] ? SGR[q.get('sg')] : (path === '/' || path === '') ? 'home' : /^\/items\//.test(path) ? 'product' : /^\/\d+-/.test(path) || /^\/search/.test(path) ? 'category' : 'other');
   W.SGType = type;
   if (type === 'other') { D.documentElement.classList.remove('sg-wait'); return; }   // pages not redesigned yet stay exactly as Konimbo renders them
@@ -2902,7 +3025,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       else if (type === 'product' && W.SGPdp && W.SGHeaderF && !q.has('sgold')) W.SGPdp(root); else if (type === 'product' && W.SGProduct) W.SGProduct(root);
       else if (type === 'studio' && W.SGStudio) W.SGStudio(root);
       else if (type === 'fav' && W.SGFavPage) W.SGFavPage(root);
-      else if ((type === 'gifts' || type === 'pkg' || type === 'gcart' || type === 'budget' || type === 'audit') && W.SGGiftPages) W.SGGiftPages(root, type);
+      else if ((type === 'gifts' || type === 'pkg' || type === 'gcart' || type === 'budget' || type === 'audit' || type === 'packtest') && W.SGGiftPages) W.SGGiftPages(root, type);
     } catch (e) { de.classList.remove('sg-wait'); if (W.console) console.error('SG', e); [].forEach.call(D.querySelectorAll('.sg-k'), function (k) { k.classList.remove('sg-k'); }); root.remove(); return; }
     root.appendChild(footer());
     var wa = D.createElement('a'); wa.className = 'sg-wa'; wa.href = 'https://api.whatsapp.com/send?phone=97235700922'; wa.setAttribute('aria-label', 'שאלה? כתבו לנו בוואטסאפ');
