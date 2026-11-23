@@ -2892,6 +2892,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           [b0, c0].forEach(function (el) { if (el && !anc.contains(el) && el.closest('form') === anc.closest('form')) anc.appendChild(el); });   // only moved inside the same form: the sign-up works exactly as before
           [].forEach.call(fs, function (x) { var c = cellOf(x); if (c) { c.classList.add('sg-cl-c'); if (x.querySelector('input[type=email], input[name*=mail]') || /מייל/.test(x.textContent)) c.classList.add('sg-cl-em'); } });
           var bc = b0 && cellOf(b0), cc = c0 && cellOf(c0); if (bc) bc.classList.add('sg-cl-bc'); if (cc) cc.classList.add('sg-cl-cc');
+          if (/sgdbg=1/.test(location.search)) setTimeout(function () { var cs = getComputedStyle(anc); anc.setAttribute('aria-label', 'DBG ' + anc.tagName + '.' + anc.className + ' d=' + cs.display + ' cols=' + cs.gridTemplateColumns + ' w=' + anc.offsetWidth + ' kids=' + [].map.call(anc.children, function (k) { return k.tagName + '.' + k.className + ':' + getComputedStyle(k).display + ':' + k.offsetWidth; }).join(' | ')); }, 1500);
         }
         var bt = box.querySelector('button, input[type=submit]'); if (bt) { bt.classList.add('sg-cl-btn'); if (bt.tagName === 'BUTTON' && !bt.children.length) bt.textContent = 'הצטרפות'; }
       } }
