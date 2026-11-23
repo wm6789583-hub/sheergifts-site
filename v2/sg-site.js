@@ -1878,7 +1878,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       '<button class="sg-pdp-gift" aria-pressed="false"><span class="g-off">+ להוסיף למתנה שלי</span><span class="g-on">✓ המוצר במתנה שלך</span></button>' +
       '<p class="sg-pdp-note">בוחרים כמה פריטים — ואנחנו מעצבים ועוטפים אותם למתנה אחת בחנות, ללא תוספת. <a href="/?sg=studio">לסטודיו המתנות ←</a></p>' +
       '<div class="sg-pdp-ship"></div>' +
-      '<ul class="sg-pdp-why"><li>עד 5 תשלומים ללא ריבית</li><li>קנייה מאובטחת</li><li><a href="https://api.whatsapp.com/send?phone=97235700922&amp;text=' + encodeURIComponent(location.href) + '">שאלה על המוצר? כתבו לנו בוואטסאפ</a></li></ul>' +
+      '<ul class="sg-pdp-why"><li>קנייה מאובטחת</li><li><a href="https://api.whatsapp.com/send?phone=97235700922&amp;text=' + encodeURIComponent(location.href) + '">שאלה על המוצר? כתבו לנו בוואטסאפ</a></li></ul>' +
       '</section></div>';
     root.appendChild(m);
     // purchase: Konimbo's own form stays in place (hidden) so the store's cart logic, upgrades and form fields keep working;
@@ -3484,7 +3484,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       '<div><h3>מתנות</h3><a href="' + DEPTS[8][1] + '">מתנות מעוצבות</a><a href="' + DEPTS[9][1] + '">קייטרינג בוטיק</a><a href="/?sg=studio">סטודיו המתנות</a><a href="/428782-%D7%92%D7%99%D7%A4%D7%98-%D7%A7%D7%90%D7%A8%D7%93">גיפט קארד</a></div>' +
       '<div><h3>החנות</h3><p>מרדכי אנילביץ 8, בני ברק</p><p>א׳–ה׳ ‎10:00–19:00 · ה׳ ‎20:00–22:00</p><p><a href="tel:03-5700922">03-5700922</a></p><p>sheer.gifts.5@gmail.com</p></div>' +
       '<div><h3>מידע</h3><a href="/about">אודות</a><a href="/contact">צור קשר</a><a href="/pages/49332-%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA-%D7%9E%D7%A9%D7%9C%D7%95%D7%97%D7%99%D7%9D">מדיניות משלוחים</a><a href="/contract">תקנון החנות</a><a href="/pages/49380-%D7%94%D7%A6%D7%94%D7%A8%D7%AA-%D7%A0%D7%92%D7%99%D7%A9%D7%95%D7%AA">הצהרת נגישות</a><a href="/customer_login">מעקב הזמנות</a></div>' +
-      '</div><div class="sg-ftr-bot"><span>© שיר מתנות — Sheer Gifts</span><span>קנייה מאובטחת · עד 5 תשלומים ללא ריבית</span></div>';
+      '</div><div class="sg-ftr-bot"><span>© שיר מתנות — Sheer Gifts</span><span>מרדכי אנילביץ 8, בני ברק · 03-5700922</span></div>';
     return f;
   }
 
