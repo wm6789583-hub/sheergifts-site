@@ -14,4 +14,9 @@ Live site: never touched. No real orders.
 - [x] package picture: real products on a toned sweep (gifts.js collage), no 2x2
 - [x] product page: brown gift band removed, no unverified installments, shipping without conflicting price
 - [x] studio: real box look (cream lid/base, ivory satin)
-- [ ] verify desktop + mobile, 3 purchase paths, screenshots
+- [x] verified desktop 1440 + mobile 500: home, category (יודאיקה), search (נטלה), product 9565461, gifts, pkg birth-small, studio, gift cart
+- [x] path A: product → add to cart (Konimbo cart 14→15)
+- [x] path B: birth package 303 ₪ → saved as gift 3 (box) in gift cart; goes to Konimbo cart on "המשך לתשלום" (not clicked: no order)
+- [x] path C: studio, add item → total 303→393 live
+- fixed on the way: PDP mobile grid, mobile dept labels, studio note overlap, brown buttons, footer installments
+- open: real package photography; studio stage not pinned on mobile scroll; test-env bar colour is the loader's (test only)
