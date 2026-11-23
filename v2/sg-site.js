@@ -1685,7 +1685,9 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           var d = f.contentDocument, cl = d.querySelector('a[href*="/orders/"]'); if (!cl) return fin(false);
           var row = function () { return [].filter.call(d.querySelectorAll('tr'), function (tr) { var a = tr.querySelector('a[href*="/items/"]'); return a && W.SG.itemId(a.getAttribute('href')) === id; })[0]; };
           var qty = function () { var r = row(); return r ? qtyOf(r.querySelector('td')) : 0; };
-          var btn = function (re) { var r = row(); return r && [].filter.call(r.querySelectorAll('button'), function (b) { return re.test(b.getAttribute('aria-label') || ''); })[0]; };
+          var btn = function (re) { var r = row(); return r && [].filter.call(r.querySelectorAll('button,a,span,div,i'), function (b) { return re.test((b.getAttribute('aria-label') || b.getAttribute('title') || '').trim()); })[0]; };
+          var minus1 = function () { var r = row(); return btn(/^הסרת 1/) || (r && [].filter.call(r.querySelectorAll('button,a,span,div'), function (e) { return !e.children.length && /^[-−]$/.test(e.textContent.trim()); })[0]); };
+          try { f.contentWindow.confirm = function () { return true; }; } catch (e) {}   // Konimbo may ask "are you sure" inside the hidden frame: the shopper already confirmed
           var left = n;
           cl.click();
           var t0 = Date.now(), w = setInterval(function () {
@@ -1693,7 +1695,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
           }, 200);
           function step() {
             var q = qty(); if (left <= 0 || q === 0) return fin(true);
-            var all = left >= q, b = all ? btn(/^הסרת המוצר/) : btn(/^הסרת 1/); if (!b) return fin(false);
+            var all = left >= q, b = all ? (btn(/^הסרת המוצר/) || minus1()) : minus1(); if (!b) return fin(false);
             b.click(); var t1 = Date.now(), c = setInterval(function () {
               var q2 = qty(); if (q2 < q) { clearInterval(c); left -= (q - q2); step(); } else if (Date.now() - t1 > 7000) { clearInterval(c); fin(false); }
             }, 250);
@@ -1736,7 +1738,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       var sh = g.ship || {}, to = g.to || {};
       t += '\n■ מתנה ' + (k + 1) + (g.title ? ' – ' + g.title : '') + '\n' +
         g.items.map(function (i) { return '• ' + i.name + ' ×' + (i.qty || 1) + (i.role === 'שדרוג' ? ' [שדרוג]' : '') + ' (' + i.id + ')'; }).join('\n') + '\n' +
-        'אריזה: ' + (G.WRAP[g.wrap] || G.WRAP.box) + (g.wrap !== 'cello' ? ' · ' + RIB[g.rib || 'gold'] : '') + '\n' +
+        'אריזה: ' + (G.WRAP[g.wrap] || G.WRAP.box) + ' · ' + RIB[g.rib || 'cream'] + '\n' +
         'למקבל/ת: ' + (to.name || '—') + (to.phone ? ' · ' + to.phone : '') + '\n' +
         (sh.mode === 'pickup' ? 'איסוף עצמי מהחנות' : 'משלוח: ' + [sh.address, sh.city].filter(Boolean).join(', ')) + (sh.date ? ' · תאריך: ' + sh.date.split('-').reverse().join('/') : '') + '\n' +
         'ברכה: ' + (g.note ? '"' + g.note.replace(/\s+/g, ' ').trim() + '"' : 'ללא') + '\n' +
@@ -2133,7 +2135,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         return '<tr' + (st === 'תקין' ? '' : ' class="bad"') + '><td>' + E(names[id]) + ' <small>(' + id + ')</small></td><td>' + nd + '</td><td>' + pu + '</td><td>' + or + '</td><td>' + pe + '</td><td>' + hv + '</td><td>' + (price[id] ? G.money(price[id]) : '—') + '</td><td>' + st + '</td></tr>'; }).join('');
       fw.querySelector('.gp-au').innerHTML = '<p><b>עגלת קונימבו:</b> ' + c.n + ' פריטים · ' + c.lines.length + ' שורות · סה״כ ' + G.money(tot) + (c.ok || c.n === 0 ? '' : ' · <b>העגלה לא נקראה</b>') + '</p>' +
         '<table class="gp-at"><thead><tr><th>מוצר</th><th>במתנות</th><th>הועבר ע״י מתנות</th><th>ממתין להסרה</th><th>אישי</th><th>בעגלה</th><th>מחיר</th><th>מצב</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        gs.map(function (g, k) { return '<p><b>מתנה ' + (k + 1) + '</b> · ' + E(g.title || '') + ' · ' + St.count(g) + ' פריטים · ' + G.money(St.total(g)) + ' · אריזה: ' + E(G.WRAP[g.wrap] || '') + ' · סרט: ' + E(G.RIB[g.rib || 'gold']) + '</p>'; }).join('') +
+        gs.map(function (g, k) { return '<p><b>מתנה ' + (k + 1) + '</b> · ' + E(g.title || '') + ' · ' + St.count(g) + ' פריטים · ' + G.money(St.total(g)) + ' · אריזה: ' + E(G.WRAP[g.wrap] || '') + ' · סרט: ' + E(G.RIB[g.rib || 'cream']) + '</p>'; }).join('') +
         '<h2>הטקסט שיועבר להזמנה</h2><pre class="gp-slip">' + E(G.slip(gs, ids.map(function (id) { var pe = Math.max(0, (have[id] || 0) - (pushed[id] || 0) - (orphan[id] || 0)); return pe ? { id: id, name: names[id], qty: pe } : null; }).filter(Boolean))) + '</pre>';
     });
   };
