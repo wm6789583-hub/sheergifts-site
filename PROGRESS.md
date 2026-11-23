@@ -32,3 +32,18 @@ Done:
 - Product page: charcoal hover (no brown).
 Tests (no order placed): home 1440/500; category judaica; studio add item 393→437 ₪ live; package page; product add-to-cart Konimbo cart 15→16.
 Not possible: browser minimum width 500 (360/390/430 not directly tested); product page keeps Konimbo template side frame (full-bleed was clipped by template container — reverted).
+
+## Home G — rich home page per mockup (2026-11-23)
+Backup: branch `backup-before-home-g` (4df1ac848166) + /home/claude/backup_homeG.
+Home sections (homeL.js + ds.css "STAGE G"):
+1. Dark hero kept; background now melts black → cream; light department cards sit on the transition.
+2. מתנה לכל אירוע — 10 image tiles made of real products; package occasions → /?sg=gifts&occ=…; wedding / birthday / thanks → /?sg=studio&occ=… (new G.OCC suggestion sources).
+3. סטודיו המתנות — large section, real birth-package products in our closed box (gold satin), 3 steps, CTA.
+4. המותגים שלנו — brands verified live: a Konimbo search per candidate, shown only if product NAMES contain the brand (cached 24h, key sg_brands2). Verified so far: Arcosteel, Pampa Bay, Cereria Mollá, Pip Studio, Little Tikes, Muka. Shown as wordmarks (no logo files available); each links to /search?q=brand.
+5. Collections — 3 campaign banners from existing real-product compositions (photo/live table/kids/studio), labelled "הדמיה ממוצרי החנות".
+6. חדשים בחנות — rail sorted by Konimbo product number (sequential = order added), one per product family.
+7. מארזים מוכנים — 4 occasions, item list, different tones & ribbons, labelled illustration.
+8. מתנות לפי תקציב — 4 tiles → new page /?sg=budget&min=&max= (gifts.js budgetPage: 9 departments × 2 pages, filtered & sorted by price).
+9. מוצרים נבחרים, 10. השראה (store-designed gift photos, masonry), 11. למה שיר מתנות (verified facts only).
+Tests: desktop 1440 + mobile 500; budget page 200–400 → 51 products; add-to-gift from home 13→14; all routes resolve. No order placed.
+Not done: real brand logo images (need files/permission); 360/390/430 not testable directly (browser min 500).
