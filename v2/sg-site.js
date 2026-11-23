@@ -2654,7 +2654,8 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   var cfgP = null;
   M.config = function () {
     if (cfgP) return cfgP;
-    var u = W.SG_MERCH_URL || root() + 'merch.json', mem = null;
+    var b = root(); if (!b && !W.SG_MERCH_URL) return Promise.resolve({ tiles: [], finder: null });   // header not built yet: ask again later
+    var u = W.SG_MERCH_URL || b + 'merch.json', mem = null;
     try { mem = JSON.parse(sessionStorage.getItem('sg_merch') || 'null'); } catch (e) {}
     if (mem && Date.now() - mem.t < 10 * 60e3 && mem.u === u && !/[?&]sgfresh=1/.test(location.search)) return (cfgP = Promise.resolve(mem.c));
     return (cfgP = fetch(u, { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (c) {
@@ -2797,7 +2798,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     else return null;
     return (nodes[t.id] = el);
   }
-  var CFG = null; M.config().then(function (c) { CFG = c; });
+  var CFG = null;
   /* ctx: {ids:[this category + its parents], on: plain view (recommended order, no price filter, grid)} — called after every grid draw */
   M.weave = function (grid, ctx) {
     if (!CFG) { M.config().then(function (c) { CFG = c; if (grid.isConnected) M.weave(grid, ctx); }); return; }
@@ -2962,6 +2963,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   'use strict';
   var W = window, D = document;
   if (W.__SG2) return; W.__SG2 = 1;
+  if (/[?&]sgdbg=1/.test(location.search)) W.addEventListener('error', function (e) { var d = D.createElement('pre'); d.className = 'sg-dbg'; d.style.cssText = 'position:fixed;z-index:99999;bottom:0;left:0;right:0;background:#fff;color:#a00;font:12px monospace;padding:8px;white-space:pre-wrap;max-height:40vh;overflow:auto'; d.textContent = 'ERR ' + e.message + ' @' + (e.filename || '').slice(-30) + ':' + e.lineno + ':' + e.colno; (D.body || D.documentElement).appendChild(d); });   // test environment only
   if (/[?&]sgraw=1/.test(location.search)) { D.documentElement.classList.remove('sg-wait'); return; }            // raw Konimbo page (used by the studio's add-to-cart frames)
   var IMG = W.SG_IMG_BASE || '';
   if (W.SG_ONE_GIFT == null) W.SG_ONE_GIFT = true;   // stage 1: one gift per order
