@@ -2662,6 +2662,13 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     var wa = D.createElement('a'); wa.className = 'sg-wa'; wa.href = 'https://api.whatsapp.com/send?phone=97235700922'; wa.setAttribute('aria-label', 'שאלה? כתבו לנו בוואטסאפ');
     wa.innerHTML = '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path fill="#fff" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6a10.6 10.6 0 0 1-5.4-1.5l-.4-.2-3.9 1 1-3.8-.2-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7a.6.6 0 0 0 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.7 3.7 0 0 0-1.1 2.7 6.5 6.5 0 0 0 1.3 3.4 14.6 14.6 0 0 0 5.6 5c2.1.9 2.9 1 3.9.8a3.4 3.4 0 0 0 2.2-1.6 2.8 2.8 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4z"/></svg>';
     root.appendChild(wa);
+    if (q.has('sgdbg')) setTimeout(function () {
+      var out = [], vw = D.documentElement.clientWidth;
+      [D.documentElement, D.body, root].concat([].slice.call(root.children, 0, 4)).forEach(function (e) { var c = getComputedStyle(e), r = e.getBoundingClientRect(); out.push((e.id || e.tagName + '.' + (e.className || '').toString().split(' ')[0]) + ' x' + Math.round(r.left) + ' w' + Math.round(r.width) + ' m' + c.margin + ' p' + c.padding + ' mw' + c.maxWidth + ' z' + c.zoom); });
+      var wide = [].filter.call(root.querySelectorAll('*'), function (e) { var r = e.getBoundingClientRect(); return r.width && (r.right > vw + 1 || r.left < -1); }).slice(0, 8).map(function (e) { var r = e.getBoundingClientRect(); return (e.className || e.tagName).toString().slice(0, 40) + ' ' + Math.round(r.left) + '..' + Math.round(r.right); });
+      var d = D.createElement('pre'); d.style.cssText = 'position:fixed;inset:auto 0 0 0;z-index:99999;background:#000;color:#0f0;font:10px/1.3 monospace;white-space:pre-wrap;margin:0;padding:4px;max-height:45vh;overflow:auto;direction:ltr';
+      d.textContent = 'vw' + vw + ' sw' + D.documentElement.scrollWidth + '\n' + out.join('\n') + '\nOVER:\n' + wide.join('\n'); D.body.appendChild(d);
+    }, 2500);
   }
   W.SG = { Store: Store, toast: toast, fmt: fmt, esc: esc, num: num, cur: cur, pricesIn: pricesIn, findByText: findByText, imgOf: imgOf, itemId: itemId, cardHTML: cardHTML, bindCards: bindCards, shortName: shortName, giftItem: giftItem, scrapeCards: scrapeCards };
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
