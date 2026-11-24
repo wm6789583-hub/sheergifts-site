@@ -3474,6 +3474,14 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
     var mw = /[?&]sgw=(\d{3})/.exec(location.search);
     if (mw && W.top === W) { var u = location.href.replace(/([?&])sgw=\d+&?/, '$1').replace(/[?&]$/, ''); D.open(); D.write('<!doctype html><html><body style="margin:0;background:#3b3631"><iframe title="mobile" src="' + u + '" style="display:block;margin:0 auto;border:0;width:' + mw[1] + 'px;height:100vh;background:#fff"></iframe></body></html>'); D.close(); return; }
     var de = D.documentElement; de.classList.remove('sg-wait'); de.classList.add('sg2', 'sg-t-' + type);
+    /* design concepts (test only): isolated pages on /?sg=concept-a|b|c, loaded from their own file */
+    var cpt = /^concept-([abc])$/.exec(q.get('sg') || '');
+    if (cpt) {
+      [].forEach.call(D.body.children, function (c) { if (c.id !== 'sg-test-env-banner' && !/^(SCRIPT|STYLE|LINK|NOSCRIPT)$/.test(c.tagName)) c.classList.add('sg-k'); });
+      var cs = D.createElement('script'); cs.src = (W.SG_IMG_BASE || '').replace(/img\/$/, '') + 'concepts.js' + (q.get('v') ? '?v=' + q.get('v') : '');
+      cs.onload = function () { if (W.SGConcept) W.SGConcept(cpt[1]); }; D.head.appendChild(cs);
+      return;
+    }
     // hide everything Konimbo rendered at load (popups it adds later stay visible)
     [].forEach.call(D.body.children, function (c) { if (c.id !== 'sg-test-env-banner' && !/^(SCRIPT|STYLE|LINK|NOSCRIPT)$/.test(c.tagName)) c.classList.add('sg-k'); });
     [].forEach.call(D.body.childNodes, function (n) { if (n.nodeType === 3 && n.nodeValue.trim()) { var s = D.createElement('span'); s.className = 'sg-k'; n.parentNode.replaceChild(s, n); s.appendChild(n); } });
