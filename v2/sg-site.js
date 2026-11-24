@@ -1024,7 +1024,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   var cache = {};
   function pull(u) {
     if (cache[u]) return cache[u];
-    var hit = W.SGKit && W.SGKit.ss('r' + u); if (hit) return (cache[u] = Promise.resolve(hit));
+    var hit = W.SGKit && W.SGKit.ss('r3' + u); if (hit) return (cache[u] = Promise.resolve(hit));
     return (cache[u] = fetch(u, { credentials: 'same-origin' }).then(function (r) { if (!r.ok || r.redirected) return ''; return r.text(); }).then(function (h) {
       if (!h) return { cards: [], subs: [] };
       var d = new DOMParser().parseFromString(h, 'text/html'), path = u.split('?')[0], seen = {};
@@ -1033,7 +1033,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         if (!m || a.closest('header,footer,nav,[class*="menu"],[class*="footer"]') || m[1].indexOf(path + '') === 0 && m[1].length <= path.length + 2) return false;
         var t = a.textContent.replace(/\s+/g, ' ').trim(); if (!t || t.length > 40 || seen[m[1]]) return false; seen[m[1]] = 1; a._u = m[1]; a._t = t; return true;
       }).map(function (a) { return { u: a._u, t: a._t }; });
-      var res = { cards: W.SG.scrapeCards(d).map(function (c) { return { id: c.id, name: c.name, price: c.price, img: c.img, url: c.url, buy: !!c.add }; }), subs: subs }; if (W.SGKit) W.SGKit.ss('r' + u, res); return res;
+      var res = { cards: W.SG.scrapeCards(d).map(function (c) { return { id: c.id, name: c.name, price: c.price, img: c.img, url: c.url, buy: !!c.buy }; }), subs: subs }; if (W.SGKit) W.SGKit.ss('r3' + u, res); return res;
     }).catch(function () { return { cards: [], subs: [] }; }));
   }
   // purchasable, with a photo, no repeats: the same product name in several colours counts once
@@ -1613,7 +1613,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
   // products of a category (first pages), purchasable only: photo + price; duplicates by name removed
   G.cat = function (url, pages) {
     if (!url) return Promise.resolve([]);
-    var key = url + '|' + (pages || 2) + '|v2';
+    var key = url + '|' + (pages || 2) + '|v3';
     if (catMem[key]) return catMem[key];
     var hit = W.SGKit && W.SGKit.ss('c' + key); if (hit) return (catMem[key] = Promise.resolve(hit));
     var S = W.SG, seen = {}, out = [], h1t = '';
@@ -1625,7 +1625,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
         var l = S.scrapeCards(d); if (l.length > 24) return 0;
         l.forEach(function (p) {
           var nm = norm(p.name); if (!p.img || !(p.price > 0) || seen[p.id] || seen[nm]) return;
-          seen[p.id] = seen[nm] = 1; out.push({ id: String(p.id), name: p.name, price: p.price, img: p.img, url: p.url || '/items/' + p.id, cat: url, buy: !!p.add });
+          seen[p.id] = seen[nm] = 1; out.push({ id: String(p.id), name: p.name, price: p.price, img: p.img, url: p.url || '/items/' + p.id, cat: url, buy: !!p.buy });
         });
         return l.length;
       }).catch(function () { return 0; });
@@ -3400,7 +3400,7 @@ window.SG_CUTS={"8017138": 1, "6629644": 1, "6570897": 0, "8758067": 1, "8758069
       while (el.parentElement && !other(el.parentElement) && !/הוספה לסל|צור קשר|לפרטים/.test(el.textContent)) el = el.parentElement;
       seen[id] = 1;
       var pr = pricesIn(el); var price = pr.length ? Math.min.apply(null, pr) : 0, old = pr.length > 1 ? Math.max.apply(null, pr) : 0;
-      out.push({ id: id, url: url.replace(/\s+/g, ''), name: h.textContent.replace(/\s+/g, ' ').trim(), img: imgOf(el), price: price, old: old > price ? old : 0, add: findByText(el, 'הוספה לסל') });
+      out.push({ id: id, url: url.replace(/\s+/g, ''), name: h.textContent.replace(/\s+/g, ' ').trim(), img: imgOf(el), price: price, old: old > price ? old : 0, add: findByText(el, 'הוספה לסל'), buy: /הוספה לסל|קנה עכשיו/.test(el.textContent) && !/אזל מהמלאי|לא זמין/.test(el.textContent) });
     });
     return out;
   }
