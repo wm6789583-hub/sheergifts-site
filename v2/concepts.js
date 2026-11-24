@@ -237,7 +237,7 @@
           [].forEach.call(st.querySelectorAll('.it'), function (e) { e.remove(); });
           st.querySelector('.sheet').insertAdjacentHTML('afterend', ps.map(function (p, j) { var q = POS[j]; return '<div class="it" style="--x:' + q[0] + '%;--y:' + q[1] + '%;--w:' + q[2] + '"><img src="' + esc(p.img) + '" alt="' + esc(shortN(p.name)) + '"></div>'; }).join(''));
           st.querySelector('[data-tt]').textContent = g[1];
-          st.querySelector('[data-tn]').innerHTML = ps.length + ' פריטים מהחנות · ' + nis(ps.reduce(function (s, p) { return s + p.price; }, 0));
+          st.querySelector('[data-tn]').innerHTML = ps.length + ' פריטים מהחנות<br>' + nis(ps.reduce(function (s, p) { return s + p.price; }, 0));
           requestAnimationFrame(function () { requestAnimationFrame(function () { st.classList.remove('out'); }); });
         });
       };
