@@ -7,6 +7,7 @@
   var nis = function (n) { return '<span class="pr">' + Math.round(n).toLocaleString('he-IL') + '&nbsp;₪</span>'; };
   var shortN = function (n) { n = String(n || '').replace(/\s+/g, ' ').trim(); return n.length > 52 ? n.slice(0, 50).replace(/\s\S*$/, '') + '…' : n; };
   var DEP = W.SGDepts || [];
+  var V = new URLSearchParams(location.search).get('v') || '';
   var dep = function (name) { var d = DEP.filter(function (x) { return x[0] === name; })[0]; return d ? d[1] : '/'; };
   var WORLDS = [
     ['כלי בית', 'arch-home', 'הגשה, אירוח וכלי שולחן'],
@@ -23,12 +24,12 @@
 
   /* ---------- real data ---------- */
   var data = {
+    // a curated shelf: real products whose photos were already cleaned into cut-outs, live name and price from the store
+    PROD: ['8017138', '8434408', '6570104', '8434432', '8601857', '9006924', '6808376', '7962381', '8831236', '8289561', '7881244', '6629644'],
     products: function () {
-      var G = W.SGG; if (!G || !G.cat) return Promise.resolve([]);
-      return Promise.all(['מתנות מעוצבות', 'כלי בית', 'יודאיקה', 'אקססוריז לבית'].map(function (n) { return G.cat(dep(n), 1).catch(function () { return []; }); })).then(function (ls) {
-        var out = [], seen = {}, i = 0, more = true;
-        while (more && out.length < 16) { more = false; ls.forEach(function (l) { var p = l[i]; if (p) { more = true; if (!seen[p.id] && p.buy !== false && p.img && p.price > 0) { seen[p.id] = 1; out.push(p); } } }); i++; }
-        return out;
+      var K = W.SGKit;
+      return Promise.all(data.PROD.map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) {
+        return ps.filter(function (p) { return p && p.price > 0; }).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { id: p.id, name: p.name, price: p.price, url: p.url, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; });
       });
     },
     pkgs: function () {
@@ -38,7 +39,7 @@
         list.sort(function (a, b) { return PKG_IDS.indexOf(a.id) - PKG_IDS.indexOf(b.id); });
         return Promise.all(list.map(function (p) {
           return Promise.all(p.items.map(function (it) { return K.item(it.id).catch(function () { return null; }); })).then(function (its) {
-            its = its.filter(Boolean); return { id: p.id, title: p.title, kicker: p.kicker, blurb: p.blurb, items: its, total: its.reduce(function (s, x) { return s + x.price; }, 0), url: '/?sg=pkg&id=' + encodeURIComponent(p.id) };
+            its = its.filter(Boolean).map(function (x) { var c = (W.SG_CUTS || {})[x.id]; return c ? { id: x.id, name: x.name, price: x.price, url: x.url, img: BASE + 'cut/' + x.id + '.webp?v=' + c } : x; }); return { id: p.id, title: p.title, kicker: p.kicker, blurb: p.blurb, items: its, total: its.reduce(function (s, x) { return s + x.price; }, 0), url: '/?sg=pkg&id=' + encodeURIComponent(p.id) };
           });
         }));
       }).then(function (l) { return l.filter(function (p) { return p.items.length >= 2; }); }).catch(function () { return []; });
@@ -53,7 +54,7 @@
     '.sw{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;gap:2px;background:#111;color:#fff;font:500 13px/1 Heebo,Arial,sans-serif;padding:4px}.sw a{padding:9px 12px}.sw a.on{background:#fff;color:#111}.sw span{padding:9px 8px;opacity:.6}' +
     '.ld{opacity:.35}.sk{background:#f1f0ee;aspect-ratio:1}:focus-visible{outline:2px solid currentColor;outline-offset:3px}' +
     '@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}';
-  var switcher = function (k) { return '<nav class="sw" aria-label="מעבר בין קונספטים"><span>קונספט</span>' + ['a', 'b', 'c'].map(function (x, i) { return '<a href="/?sg=concept-' + x + '"' + (x === k ? ' class="on" aria-current="page"' : '') + '>' + 'אבג'[i] + '</a>'; }).join('') + '</nav>'; };
+  var switcher = function (k) { return '<nav class="sw" aria-label="מעבר בין קונספטים"><span>קונספט</span>' + ['a', 'b', 'c'].map(function (x, i) { return '<a href="/?sg=concept-' + x + (V ? '&v=' + V : '') + '"' + (x === k ? ' class="on" aria-current="page"' : '') + '>' + 'אבג'[i] + '</a>'; }).join('') + '</nav>'; };
   var searchGo = function (root) { [].forEach.call(root.querySelectorAll('form[data-s]'), function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var v = f.querySelector('input').value.trim(); if (v) location.href = '/search?q=' + encodeURIComponent(v); }); }); };
   var menu = function (root) { var b = root.querySelector('[data-menu]'), n = root.querySelector('[data-drawer]'); if (b && n) b.addEventListener('click', function () { var o = n.hasAttribute('hidden'); if (o) n.removeAttribute('hidden'); else n.setAttribute('hidden', ''); b.setAttribute('aria-expanded', o); }); };
   var navLinks = function () { return NAV.map(function (n) { return '<a href="' + dep(n) + '">' + esc(n) + '</a>'; }).join(''); };
@@ -93,7 +94,7 @@
       '.idx li b{font:400 clamp(26px,2.6vw,40px)/1.1 "Frank Ruhl Libre",Georgia,serif;transition:color .25s}.idx li span{color:var(--mute);font-size:15px}.idx li a:hover b,.idx li a.on b{color:var(--acc)}' +
       '.idx figure{position:sticky;top:150px;margin:0;background:var(--paper);aspect-ratio:4/5;display:grid;place-items:center}.idx figure img{max-height:72%;max-width:70%;object-fit:contain;transition:opacity .3s}.idx figcaption{position:absolute;bottom:18px;right:20px;font-size:14px;color:var(--mute)}' +
       '.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,2.2vw,34px) clamp(14px,1.6vw,24px)}.grid .p:first-child{grid-column:span 2;grid-row:span 2}' +
-      '.p .im{background:var(--paper);aspect-ratio:1;display:grid;place-items:center;overflow:hidden}.p .im img{width:84%;height:84%;object-fit:contain;mix-blend-mode:multiply;transition:transform .5s}.p:first-child .im{aspect-ratio:auto;height:calc(100% - 64px)}' +
+      '.p .im{background:var(--paper);aspect-ratio:1;display:grid;place-items:center;overflow:hidden}.p .im img{width:78%;height:78%;object-fit:contain;transition:transform .5s;filter:drop-shadow(0 18px 14px rgba(60,45,30,.14))}.p:first-child .im{aspect-ratio:auto;height:calc(100% - 64px)}' +
       '.p:hover .im img{transform:scale(1.04)}.p .nm{display:block;margin-top:12px;font-size:15px;line-height:1.4}.p .pr{display:block;font-size:15px;color:var(--mute);margin-top:2px}.p:first-child .nm{font:400 22px/1.3 "Frank Ruhl Libre",serif}' +
       '.spread{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:0;background:var(--paper)}.spread>img{width:100%;height:100%;min-height:560px;object-fit:cover}' +
       '.spread .tx{padding:clamp(28px,5vw,80px);display:flex;flex-direction:column;justify-content:center}.k{font-size:14px;color:var(--acc);font-weight:600;margin-bottom:12px}.spread p{color:#3a3631;margin:16px 0 26px;max-width:32em}' +
