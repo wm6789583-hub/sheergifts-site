@@ -29,7 +29,7 @@
     products: function () {
       var K = W.SGKit;
       return Promise.all(data.PROD.map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) {
-        return ps.filter(function (p) { return p && p.price > 0; }).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { id: p.id, name: p.name, price: p.price, url: p.url, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; });
+        return ps.filter(function (p) { return p && p.price > 0; }).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { id: p.id, name: p.name, price: p.price, url: p.url, orig: p.img, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; });
       });
     },
     pkgs: function () {
@@ -138,7 +138,7 @@
         '<div class="fb"><span>© שיר מתנות — Sheer Gifts</span><span>קנייה מאובטחת · עד 5 תשלומים ללא ריבית</span></div></div></footer></div>';
     },
     products: function (l) {
-      return l.slice(0, 9).map(function (p) { return '<a class="p" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span>' + nis(p.price) + '</a>'; }).join('');
+      return l.slice(0, 9).map(function (p, i) { return '<a class="p" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(i ? p.img : (p.orig || p.img)) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span>' + nis(p.price) + '</a>'; }).join('');
     },
     pkgs: function (l) {
       var f = l[0]; if (!f) return '';
@@ -260,11 +260,11 @@
       '.acts{display:flex;gap:8px;align-items:center}.acts form{display:flex;height:42px;background:var(--tint);width:220px}.acts input{flex:1;border:0;outline:0;background:none;padding:0 14px;font-size:15px}.acts .cart{height:42px;padding:0 18px;background:var(--ink);color:#fff;display:flex;align-items:center;font-weight:700;font-size:14px}.acts .gf{height:42px;padding:0 14px;display:flex;align-items:center;font-weight:700;font-size:14px;color:var(--co)}.mb{display:none}' +
       '.hero{background:var(--co);color:#fff;overflow:hidden}.hero .w{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;min-height:min(86vh,860px);padding-block:clamp(28px,4vw,56px) 28px}' +
       'h1{grid-column:1/-1;grid-row:1;font:400 clamp(58px,9.4vw,168px)/.9 "Suez One",Georgia,serif;margin:0;letter-spacing:-.02em;position:relative;z-index:1}h1 span{display:block}h1 span+span{text-align:left}' +
-      '.obj{grid-column:1/-1;grid-row:1/3;position:relative;z-index:2;display:grid;place-items:center;pointer-events:none}.obj img{max-height:min(64vh,620px);max-width:min(52vw,640px);object-fit:contain;filter:drop-shadow(0 40px 34px rgba(0,0,40,.45));transition:opacity .35s,transform .55s cubic-bezier(.2,.7,.2,1)}.obj.out img{opacity:0;transform:translateY(24px) scale(.96)}' +
+      '.obj{grid-column:1/-1;grid-row:1/3;position:relative;z-index:2;display:grid;place-items:center;pointer-events:none}.plinth{width:min(36vw,480px);aspect-ratio:1;background:#fff;display:grid;place-items:center;box-shadow:0 50px 60px -40px rgba(0,0,40,.6);transition:opacity .35s,transform .55s cubic-bezier(.2,.7,.2,1)}.plinth img{width:84%;height:84%;object-fit:contain}.obj.out .plinth{opacity:0;transform:translateY(24px) scale(.96)}' +
       '.bar{grid-column:1/-1;grid-row:2;align-self:end;display:flex;justify-content:space-between;align-items:end;gap:24px;position:relative;z-index:2}.now{max-width:340px}.now small{display:block;opacity:.75;font-size:14px}.now b{display:block;font-size:20px;line-height:1.3;margin:4px 0}.now a{display:inline-flex;margin-top:10px;height:46px;align-items:center;padding:0 22px;background:#fff;color:var(--co);font-weight:700;font-size:15px}' +
-      '.rail{display:flex;gap:10px}.rail button{width:92px;height:92px;background:rgba(255,255,255,.12);display:grid;place-items:center;transition:background .2s}.rail button img{max-width:74%;max-height:74%;object-fit:contain}.rail button[aria-pressed=true]{background:#fff}.rail button:hover{background:rgba(255,255,255,.3)}' +
+      '.rail{display:flex;gap:10px}.rail button{width:92px;height:92px;background:#fff;display:grid;place-items:center;opacity:.55;transition:opacity .2s,transform .2s;position:relative}.rail button img{width:80%;height:80%;object-fit:contain}.rail button[aria-pressed=true]{opacity:1;transform:translateY(-6px)}.rail button:hover{opacity:.9}' +
       '.sec{padding-block:clamp(56px,7vw,110px)}h2{font:400 clamp(40px,5vw,80px)/.95 "Suez One",serif;margin:0;letter-spacing:-.015em}.hrow{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:clamp(24px,3vw,44px)}.hrow a{font-weight:700;color:var(--co);white-space:nowrap}' +
-      '.dl{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}.dl a{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;padding:10px 0;border-bottom:2px solid var(--ink)}.dl b{font:400 clamp(34px,5.2vw,84px)/1.05 "Suez One",serif;letter-spacing:-.015em;transition:color .2s,padding .3s}' +
+      '.dl{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}.dl a{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;padding:10px 0;border-bottom:2px solid var(--ink)}.dl b{font:400 clamp(30px,4.2vw,64px)/1.1 "Suez One",serif;letter-spacing:-.015em;transition:color .2s,padding .3s}' +
       '.dl span{font-size:15px;color:var(--mute);text-align:left}.dl a:hover b{color:var(--co);padding-inline-start:18px}.dl i{display:none}' +
       '.fl{position:fixed;left:0;top:0;width:220px;height:260px;pointer-events:none;z-index:30;opacity:0;transition:opacity .2s;background:var(--tint);display:grid;place-items:center}.fl img{max-width:78%;max-height:78%;object-fit:contain;mix-blend-mode:multiply}.fl.on{opacity:1}' +
       '.shelf{background:var(--tint)}.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.p{background:#fff;display:flex;flex-direction:column;padding:18px}.p .im{flex:1;display:grid;place-items:center;aspect-ratio:1}.p img{width:88%;height:88%;object-fit:contain;transition:transform .5s}.p:hover img{transform:scale(1.05)}' +
@@ -279,7 +279,7 @@
       '.ft{background:var(--co);color:#fff;padding-block:56px 24px;overflow:hidden}.big{font:400 clamp(64px,13vw,230px)/.85 "Suez One",serif;letter-spacing:-.03em;margin:0 0 40px;white-space:nowrap}.fg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;font-size:15px}.fg h3{font:700 15px/1 Heebo,sans-serif;margin:0 0 14px;opacity:.7}.fg a{display:block;padding:3px 0}.fg a:hover{text-decoration:underline}' +
       '.fg form{display:flex;height:46px;background:#fff;margin-top:14px}.fg input{flex:1;border:0;outline:0;padding:0 12px;color:var(--ink)}.fg button{background:var(--ink);color:#fff;padding:0 16px;font-weight:700}.fb{margin-top:44px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;opacity:.8}' +
       '@media(max-width:1000px){.r1{grid-template-columns:auto 1fr auto;height:64px}.logo img{height:46px}.r1>.nv,.acts form,.acts .gf{display:none}.mb{display:block;font-weight:700;font-size:15px;order:-1}.dr{padding:0 16px 14px}.dr form{display:flex;height:46px;background:var(--tint)}.dr input{flex:1;border:0;outline:0;background:none;padding:0 12px;font-size:16px}.dr .nv{justify-content:flex-start;margin-top:12px;flex-wrap:wrap;white-space:normal;gap:6px 18px}}' +
-      '@media(max-width:700px){.hero .w{grid-template-columns:1fr;grid-template-rows:auto auto auto;min-height:0;padding-block:24px 20px;gap:4px}h1{grid-row:1;font-size:clamp(48px,14vw,72px)}h1 span+span{text-align:right}.obj{grid-row:2;padding-block:4px}.obj img{max-width:82%;max-height:44vh}' +
+      '@media(max-width:700px){.hero .w{grid-template-columns:1fr;grid-template-rows:auto auto auto;min-height:0;padding-block:24px 20px;gap:4px}h1{grid-row:1;font-size:clamp(48px,14vw,72px)}h1 span+span{text-align:right}.obj{grid-row:2;padding-block:4px}.plinth{width:78vw}' +
       '.bar{grid-row:3;flex-direction:column;align-items:stretch}.rail{overflow-x:auto;scrollbar-width:none}.rail button{flex:0 0 72px;height:72px}.dl a{padding:14px 0;grid-template-columns:64px minmax(0,1fr)}.dl i{display:block;width:64px;height:64px;background:var(--tint)}.dl i img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}.dl span{display:none}' +
       '.bento{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.p{padding:12px}.p.big .nm{font-size:21px}.arw{display:none}.car>a{flex-basis:80%}.fg{grid-template-columns:1fr 1fr}.dot{left:var(--xm);top:var(--ym)}.pop{width:240px}}',
     html: function () {
@@ -287,7 +287,7 @@
         '<nav class="nv" aria-label="מחלקות">' + navLinks() + '<a href="/?sg=gifts" style="color:var(--co)">מארזים</a></nav>' +
         '<div class="acts"><button class="mb" data-menu aria-expanded="false">תפריט</button><form data-s role="search"><input type="search" placeholder="חיפוש" aria-label="חיפוש"></form><a class="gf" href="/?sg=studio">המתנה</a><a class="cart" href="/?sg=cart">סל</a></div></div>' +
         '<div class="dr" data-drawer hidden><form data-s role="search"><input type="search" placeholder="חיפוש בין אלפי פריטים" aria-label="חיפוש"></form><nav class="nv" aria-label="מחלקות">' + navLinks() + '<a href="/?sg=gifts">מארזים</a><a href="/?sg=studio">סטודיו המתנות</a></nav></div></header>' +
-        '<main id="m"><section class="hero"><div class="w"><h1><span>אלפי פריטים.</span><span>מתנה אחת.</span></h1><div class="obj" data-obj><img alt="" src=""></div>' +
+        '<main id="m"><section class="hero"><div class="w"><h1><span>אלפי פריטים.</span><span>מתנה אחת.</span></h1><div class="obj" data-obj><div class="plinth"><img alt="" src=""></div></div>' +
         '<div class="bar"><div class="now"><small>בחלון עכשיו</small><b data-nn>…</b><span data-np></span><br><a data-nl href="/?sg=studio">לפרטי הפריט</a></div><div class="rail" data-rail aria-label="פריטים בחלון"></div></div></div></section>' +
         '<section class="sec w"><div class="hrow"><h2>המחלקות</h2><a href="/?sg=finder">יועץ המתנות ←</a></div><ul class="dl">' +
         WORLDS.map(function (x, i) { return '<li><a href="' + x.url + '" data-w="' + i + '"><i><img src="' + x.img + '" alt="" loading="lazy"></i><b>' + esc(x.name) + '</b><span>' + esc(x.line) + '</span></a></li>'; }).join('') + '</ul><div class="fl" aria-hidden="true"><img alt=""></div></section>' +
@@ -301,7 +301,7 @@
         '<div class="fb"><span>© שיר מתנות — Sheer Gifts</span><span>קנייה מאובטחת · עד 5 תשלומים ללא ריבית</span></div></div></footer></div>';
     },
     products: function (l) {
-      return l.slice(0, 9).map(function (p, i) { return '<a class="p' + (i === 4 ? ' big' : '') + '" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span><div class="row">' + nis(p.price) + '<span class="add" aria-hidden="true">+</span></div></a>'; }).join('');
+      return l.slice(0, 9).map(function (p, i) { return '<a class="p' + (i === 4 ? ' big' : '') + '" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(i === 4 ? (p.orig || p.img) : p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span><div class="row">' + nis(p.price) + '<span class="add" aria-hidden="true">+</span></div></a>'; }).join('');
     },
     pkgs: function (l) {
       return l.map(function (p) { return '<a href="' + p.url + '"><div class="sq">' + p.items.slice(0, 3).map(function (x) { return '<img src="' + esc(x.img) + '" alt="" loading="lazy">'; }).join('') + '<em>' + nis(p.total) + '</em></div><b>' + esc(p.title) + '</b><span>' + esc(p.kicker) + ' · ' + p.items.length + ' פריטים</span></a>'; }).join('');
@@ -312,7 +312,7 @@
       var K = W.SGKit, obj = root.querySelector('[data-obj]'), rail = root.querySelector('[data-rail]');
       Promise.all(C.HERO.map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) {
         ps = ps.filter(Boolean); if (!ps.length) return;
-        return Promise.all(ps.map(data.cut)).then(function (srcs) {
+        return Promise.resolve(ps.map(function (p) { return p.img; })).then(function (srcs) {
           var show = function (i) {
             var p = ps[i]; [].forEach.call(rail.children, function (b, j) { b.setAttribute('aria-pressed', j === i); });
             obj.classList.add('out');
