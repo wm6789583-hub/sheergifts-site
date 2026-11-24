@@ -25,11 +25,11 @@
   /* ---------- real data ---------- */
   var data = {
     // a curated shelf: real products whose photos were already cleaned into cut-outs, live name and price from the store
-    PROD: ['8017138', '8434408', '6570104', '8434432', '8601857', '9006924', '6808376', '7962381', '8831236', '8289561', '7881244', '6629644'],
+    PROD: ['6808376', '8434408', '6570104', '8434432', '9565461', '9006924', '8017138', '7962381', '8831236', '8289561', '7881244', '8601857'],
     products: function () {
       var K = W.SGKit;
       return Promise.all(data.PROD.map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) {
-        return ps.filter(function (p) { return p && p.price > 0; }).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { id: p.id, name: p.name, price: p.price, url: p.url, orig: p.img, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; });
+        return ps.filter(function (p) { return p && p.price > 0; }).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { id: p.id, name: p.name, price: p.price, url: p.url, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; });
       });
     },
     pkgs: function () {
@@ -138,7 +138,7 @@
         '<div class="fb"><span>© שיר מתנות — Sheer Gifts</span><span>קנייה מאובטחת · עד 5 תשלומים ללא ריבית</span></div></div></footer></div>';
     },
     products: function (l) {
-      return l.slice(0, 9).map(function (p, i) { return '<a class="p" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(i ? p.img : (p.orig || p.img)) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span>' + nis(p.price) + '</a>'; }).join('');
+      return l.slice(0, 9).map(function (p, i) { return '<a class="p" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span>' + nis(p.price) + '</a>'; }).join('');
     },
     pkgs: function (l) {
       var f = l[0]; if (!f) return '';
@@ -260,7 +260,7 @@
       '.acts{display:flex;gap:8px;align-items:center}.acts form{display:flex;height:42px;background:var(--tint);width:220px}.acts input{flex:1;border:0;outline:0;background:none;padding:0 14px;font-size:15px}.acts .cart{height:42px;padding:0 18px;background:var(--ink);color:#fff;display:flex;align-items:center;font-weight:700;font-size:14px}.acts .gf{height:42px;padding:0 14px;display:flex;align-items:center;font-weight:700;font-size:14px;color:var(--co)}.mb{display:none}' +
       '.hero{background:var(--co);color:#fff;overflow:hidden}.hero .w{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;min-height:min(86vh,860px);padding-block:clamp(28px,4vw,56px) 28px}' +
       'h1{grid-column:1/-1;grid-row:1;font:400 clamp(58px,9.4vw,168px)/.9 "Suez One",Georgia,serif;margin:0;letter-spacing:-.02em;position:relative;z-index:1}h1 span{display:block}h1 span+span{text-align:left}' +
-      '.obj{grid-column:1/-1;grid-row:1/3;position:relative;z-index:2;display:grid;place-items:center;pointer-events:none}.plinth{width:min(36vw,480px);aspect-ratio:1;background:#fff;display:grid;place-items:center;box-shadow:0 50px 60px -40px rgba(0,0,40,.6);transition:opacity .35s,transform .55s cubic-bezier(.2,.7,.2,1)}.plinth img{width:84%;height:84%;object-fit:contain}.obj.out .plinth{opacity:0;transform:translateY(24px) scale(.96)}' +
+      '.obj{grid-column:1/-1;grid-row:1/3;position:relative;z-index:2;display:grid;place-items:center;pointer-events:none}.plinth{width:min(30vw,420px);aspect-ratio:1;background:#fff;display:grid;place-items:center;box-shadow:0 50px 60px -40px rgba(0,0,40,.6);transition:opacity .35s,transform .55s cubic-bezier(.2,.7,.2,1)}.plinth img{width:78%;height:78%;object-fit:contain}.obj.out .plinth{opacity:0;transform:translateY(24px) scale(.96)}' +
       '.bar{grid-column:1/-1;grid-row:2;align-self:end;display:flex;justify-content:space-between;align-items:end;gap:24px;position:relative;z-index:2}.now{max-width:340px}.now small{display:block;opacity:.75;font-size:14px}.now b{display:block;font-size:20px;line-height:1.3;margin:4px 0}.now a{display:inline-flex;margin-top:10px;height:46px;align-items:center;padding:0 22px;background:#fff;color:var(--co);font-weight:700;font-size:15px}' +
       '.rail{display:flex;gap:10px}.rail button{width:92px;height:92px;background:#fff;display:grid;place-items:center;opacity:.55;transition:opacity .2s,transform .2s;position:relative}.rail button img{width:80%;height:80%;object-fit:contain}.rail button[aria-pressed=true]{opacity:1;transform:translateY(-6px)}.rail button:hover{opacity:.9}' +
       '.sec{padding-block:clamp(56px,7vw,110px)}h2{font:400 clamp(40px,5vw,80px)/.95 "Suez One",serif;margin:0;letter-spacing:-.015em}.hrow{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:clamp(24px,3vw,44px)}.hrow a{font-weight:700;color:var(--co);white-space:nowrap}' +
@@ -279,7 +279,7 @@
       '.ft{background:var(--co);color:#fff;padding-block:56px 24px;overflow:hidden}.wm{font:400 clamp(64px,13vw,230px)/.85 "Suez One",serif;letter-spacing:-.03em;margin:0 0 40px;white-space:nowrap}.fg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;font-size:15px}.fg h3{font:700 15px/1 Heebo,sans-serif;margin:0 0 14px;opacity:.7}.fg a{display:block;padding:3px 0}.fg a:hover{text-decoration:underline}' +
       '.fg form{display:flex;height:46px;background:#fff;margin-top:14px}.fg input{flex:1;border:0;outline:0;padding:0 12px;color:var(--ink)}.fg button{background:var(--ink);color:#fff;padding:0 16px;font-weight:700}.fb{margin-top:44px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;opacity:.8}' +
       '@media(max-width:1000px){.r1{grid-template-columns:auto 1fr auto;height:64px}.logo img{height:46px}.r1>.nv,.acts form,.acts .gf{display:none}.mb{display:block;font-weight:700;font-size:15px;order:-1}.dr{padding:0 16px 14px}.dr form{display:flex;height:46px;background:var(--tint)}.dr input{flex:1;border:0;outline:0;background:none;padding:0 12px;font-size:16px}.dr .nv{justify-content:flex-start;margin-top:12px;flex-wrap:wrap;white-space:normal;gap:6px 18px}}' +
-      '@media(max-width:700px){.hero .w{grid-template-columns:1fr;grid-template-rows:auto auto auto;min-height:0;padding-block:24px 20px;gap:4px}h1{grid-row:1;font-size:clamp(48px,14vw,72px)}h1 span+span{text-align:right}.obj{grid-row:2;padding-block:4px}.plinth{width:78vw}' +
+      '@media(max-width:700px){.hero .w{grid-template-columns:1fr;grid-template-rows:auto auto auto;min-height:0;padding-block:24px 20px;gap:4px}h1{grid-row:1;font-size:clamp(48px,14vw,72px)}h1 span+span{text-align:right}.obj{grid-row:2;padding-block:4px}.plinth{width:72vw}' +
       '.bar{grid-row:3;flex-direction:column;align-items:stretch}.rail{overflow-x:auto;scrollbar-width:none}.rail button{flex:0 0 72px;height:72px}.dl a{padding:14px 0;grid-template-columns:64px minmax(0,1fr)}.dl i{display:block;width:64px;height:64px;background:var(--tint)}.dl i img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}.dl span{display:none}' +
       '.bento{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.p{padding:12px}.p.big .nm{font-size:21px}.arw{display:none}.car>a{flex-basis:80%}.fg{grid-template-columns:1fr 1fr}.dot{left:var(--xm);top:var(--ym)}.pop{width:240px}}',
     html: function () {
@@ -301,7 +301,7 @@
         '<div class="fb"><span>© שיר מתנות — Sheer Gifts</span><span>קנייה מאובטחת · עד 5 תשלומים ללא ריבית</span></div></div></footer></div>';
     },
     products: function (l) {
-      return l.slice(0, 9).map(function (p, i) { return '<a class="p' + (i === 4 ? ' big' : '') + '" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(i === 4 ? (p.orig || p.img) : p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span><div class="row">' + nis(p.price) + '<span class="add" aria-hidden="true">+</span></div></a>'; }).join('');
+      return l.slice(0, 9).map(function (p, i) { return '<a class="p' + (i === 4 ? ' big' : '') + '" href="' + esc(p.url) + '"><div class="im"><img src="' + esc(p.img) + '" alt="" loading="lazy"></div><span class="nm">' + esc(shortN(p.name)) + '</span><div class="row">' + nis(p.price) + '<span class="add" aria-hidden="true">+</span></div></a>'; }).join('');
     },
     pkgs: function (l) {
       return l.map(function (p) { return '<a href="' + p.url + '"><div class="sq"><img src="' + esc(p.items[0].img) + '" alt="" loading="lazy"><div class="th">' + p.items.slice(1, 4).map(function (x) { return '<img src="' + esc(x.img) + '" alt="" loading="lazy">'; }).join('') + '</div><em>' + nis(p.total) + '</em></div><b>' + esc(p.title) + '</b><span>' + esc(p.kicker) + ' · ' + p.items.length + ' פריטים</span></a>'; }).join('');
@@ -312,7 +312,7 @@
       var K = W.SGKit, obj = root.querySelector('[data-obj]'), rail = root.querySelector('[data-rail]');
       Promise.all(C.HERO.map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) {
         ps = ps.filter(Boolean); if (!ps.length) return;
-        return Promise.resolve(ps.map(function (p) { return p.img; })).then(function (srcs) {
+        return Promise.all(ps.map(data.cut)).then(function (srcs) {
           var show = function (i) {
             var p = ps[i]; [].forEach.call(rail.children, function (b, j) { b.setAttribute('aria-pressed', j === i); });
             obj.classList.add('out');
