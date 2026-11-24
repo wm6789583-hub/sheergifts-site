@@ -44,7 +44,7 @@
         }));
       }).then(function (l) { return l.filter(function (p) { return p.items.length >= 2; }); }).catch(function () { return []; });
     },
-    look: function (key) { var L = ((W.SG_PHOTOS || {}).live || {})[key] || {}; return { d: BASE + 'photo/live/' + L.d, m: BASE + 'photo/live/' + L.m, spots: (L.spots || []).filter(function (s) { return !s.nm; }) }; },
+    look: function (key) { var L = ((W.SG_PHOTOS || {}).live || {})[key] || {}; return { d: BASE + 'photo/live/' + L.d, m: BASE + 'photo/live/' + (L.m || L.d), spots: (L.spots || []).filter(function (s) { return !s.nm; }) }; },
     cut: function (p) { var K = W.SGKit; return (K && K.cut ? K.cut(p) : Promise.resolve(null)).then(function (c) { return c && c.mode === 'cut' ? c.src : p.img; }).catch(function () { return p.img; }); }
   };
 
@@ -53,6 +53,7 @@
   var BASECSS = ':host{all:initial;display:block}*{box-sizing:border-box;min-width:0}a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,input{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;padding:0}.pr{white-space:nowrap;font-variant-numeric:tabular-nums}' +
     '.sw{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;gap:2px;background:#111;color:#fff;font:500 13px/1 Heebo,Arial,sans-serif;padding:4px}.sw a{padding:9px 12px}.sw a.on{background:#fff;color:#111}.sw span{padding:9px 8px;opacity:.6}' +
     '.ld{opacity:.35}.sk{background:#f1f0ee;aspect-ratio:1}:focus-visible{outline:2px solid currentColor;outline-offset:3px}' +
+    '.p .im{position:relative;overflow:hidden}.p .im img{position:absolute;left:8%;top:8%;width:84%!important;height:84%!important;object-fit:contain}' +
     '@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}';
   var switcher = function (k) { return '<nav class="sw" aria-label="מעבר בין קונספטים"><span>קונספט</span>' + ['a', 'b', 'c'].map(function (x, i) { return '<a href="/?sg=concept-' + x + (V ? '&v=' + V : '') + '"' + (x === k ? ' class="on" aria-current="page"' : '') + '>' + 'אבג'[i] + '</a>'; }).join('') + '</nav>'; };
   var searchGo = function (root) { [].forEach.call(root.querySelectorAll('form[data-s]'), function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var v = f.querySelector('input').value.trim(); if (v) location.href = '/search?q=' + encodeURIComponent(v); }); }); };
@@ -99,7 +100,7 @@
       '.spread{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:0;background:var(--paper)}.spread>img{width:100%;height:100%;min-height:560px;object-fit:cover}' +
       '.spread .tx{padding:clamp(28px,5vw,80px);display:flex;flex-direction:column;justify-content:center}.k{font-size:14px;color:var(--acc);font-weight:600;margin-bottom:12px}.spread p{color:#3a3631;margin:16px 0 26px;max-width:32em}' +
       '.cred{list-style:none;margin:0 0 24px;padding:0;font-size:15px}.cred li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:9px 0;border-bottom:1px solid #e2ddd5}.cred li.t{border:0;font-weight:700;padding-top:14px}' +
-      '.more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2vw,32px);margin-top:clamp(40px,5vw,72px)}.more a{display:block}.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--paper);padding:14px}.strip img{aspect-ratio:1;object-fit:contain;mix-blend-mode:multiply}' +
+      '.more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2vw,32px);margin-top:clamp(40px,5vw,72px)}.more a{display:block}.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.strip img{aspect-ratio:1;width:100%;object-fit:cover}' +
       '.more b{display:block;font:400 22px/1.2 "Frank Ruhl Libre",serif;margin-top:14px}.more span{font-size:14px;color:var(--mute)}' +
       '.look{position:relative}.look img.bg{width:100%;height:auto}.dot{position:absolute;left:var(--x);top:var(--y);width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.35)}.dot:hover{background:var(--acc)}' +
       '.pop{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,calc(-100% - 22px));background:#fff;display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;padding:12px;width:290px;font-size:14px;z-index:3}.pop[hidden]{display:none}.pop img{width:72px;height:72px;object-fit:contain}.pop b{display:block;font-weight:600;line-height:1.35}.pop a{display:block;margin-top:4px;color:var(--acc);font-weight:600}' +
@@ -176,12 +177,12 @@
       '.tag{position:absolute;right:2%;top:3%;width:200px;background:#fbf8f3;padding:18px 18px 16px;transform:rotate(3deg);box-shadow:0 10px 18px -12px rgba(0,0,0,.45);clip-path:polygon(0 14%,14% 0,100% 0,100% 100%,0 100%)}' +
       '.tag:before{content:"";position:absolute;top:14px;left:14px;width:9px;height:9px;border-radius:50%;background:var(--kraft)}.tag i{display:block;font:500 15px/1.3 "Noto Rashi Hebrew",serif;color:var(--mute)}.tag b{display:block;font:700 30px/1 Karantina,sans-serif;margin:6px 0}.tag .pr{font-weight:600}' +
       '.sec{padding-block:clamp(56px,7vw,104px)}.hrow{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:32px}h2{font:700 clamp(40px,4.2vw,64px)/.95 Karantina,sans-serif;margin:0}.hrow a{font-weight:600;border-bottom:1.5px solid;white-space:nowrap}' +
-      '.wl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,22px)}.wl a{display:block;background:#f6f2ec}.wl .im{aspect-ratio:1/1.05;display:grid;place-items:center;padding:12%}.wl img{max-height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform .5s}.wl a:hover img{transform:translateY(-6px)}' +
+      '.wl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,22px)}.wl a{display:block;background:#f6f2ec}.wl .im{aspect-ratio:1/1;padding:10%;overflow:hidden}.wl img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform .5s}.wl a:hover img{transform:translateY(-6px)}' +
       '.wl .lb{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:#fff;padding:10px 14px;font:700 24px/1 Karantina,sans-serif;letter-spacing:.02em}.wl .lb small{font:400 13px/1.2 "IBM Plex Sans Hebrew",sans-serif;opacity:.75}' +
       '.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px clamp(14px,1.8vw,26px)}.p .im{aspect-ratio:1;display:grid;place-items:center;background:#fff;border-bottom:1.5px solid var(--ink)}.p .im img{width:86%;height:86%;object-fit:contain}' +
       '.p .nm{display:block;margin:12px 0 2px;font-size:15px;line-height:1.4;min-height:2.8em}.p .row{display:flex;justify-content:space-between;align-items:center;gap:8px}.p .row .pr{font-weight:600}.p .add{font-size:14px;font-weight:600;background:var(--kraft2);padding:7px 12px}.p:hover .add{background:var(--kraft)}' +
       '.pk{background:#f6f2ec}.boxes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(14px,2vw,28px)}.bx{display:block}.bx .lid{position:relative;aspect-ratio:1;background:#fff;overflow:hidden}' +
-      '.bx .lid img{position:absolute;width:44%;aspect-ratio:1;object-fit:contain;mix-blend-mode:multiply;transition:transform .6s cubic-bezier(.2,.7,.2,1)}.bx .lid img:nth-child(1){left:6%;top:12%}.bx .lid img:nth-child(2){right:6%;top:8%}.bx .lid img:nth-child(3){left:28%;top:40%;width:46%}' +
+      '.bx .lid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;padding:6px}.bx .lid img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}.bx .lid img:first-child:nth-last-child(4){grid-row:span 2}' +
       '.bx .rb{position:absolute;left:0;right:0;bottom:13%;height:36px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:400 20px/1 Karantina,sans-serif;letter-spacing:.06em;transition:transform .6s cubic-bezier(.2,.7,.2,1)}' +
       '.bx:hover .rb{transform:translateX(-102%)}.bx:hover .lid img{transform:translateY(-5px)}.bx b{display:block;font:700 30px/1 Karantina,sans-serif;margin-top:14px}.bx .m{display:flex;justify-content:space-between;color:var(--mute);font-size:14px;margin-top:4px}.bx .m .pr{color:var(--ink);font-weight:600;font-size:15px}' +
       '.ins{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:clamp(24px,4vw,56px);align-items:center}.look{position:relative}.look img.bg{width:100%}.steps{list-style:none;margin:20px 0 28px;padding:0}.steps li{padding:14px 0;border-top:1.5px solid var(--ink)}.steps b{display:block;font:700 26px/1 Karantina,sans-serif}.steps span{color:var(--mute);font-size:15px}' +
@@ -203,12 +204,12 @@
         '<nav class="w nv" aria-label="מחלקות">' + navLinks() + '<a class="st" href="/?sg=gifts">מארזים מוכנים</a><a style="font-weight:600" href="/?sg=finder">יועץ המתנות</a></nav></header>' +
         '<main id="m"><section class="hero"><div class="w"><div><h1>בוחרים פריטים.<br>אנחנו הופכים אותם<br>למתנה אחת.</h1><p class="lead">כל פריט בחנות יכול להיכנס למתנה. אנחנו אורזים, מוסיפים כרטיס ברכה ושולחים, או שאוספים מהחנות בבני ברק.</p>' +
         '<div class="occ" role="group" aria-label="דוגמה לפי אירוע" data-occ></div><a class="btn" href="/?sg=studio">להרכבת מתנה</a><a class="ln" href="/?sg=finder">עזרה בבחירה</a></div>' +
-        '<div class="stage" data-stage><div class="sheet"></div><div class="band" aria-hidden="true">' + B.ribbon('שיר מתנות', 10) + '</div><div class="tag"><i>לכבוד</i><b data-tt>…</b><span data-tn></span></div></div></div></section>' +
+        '<div class="stage" data-stage><div class="sheet"></div><div class="band" aria-hidden="true">' + B.ribbon('שיר מתנות', 10) + '</div><div class="tag"><i>דוגמה למתנה</i><b data-tt>…</b><span data-tn></span></div></div></div></section>' +
         '<section class="sec w"><div class="hrow"><h2>מהמדפים של החנות</h2><a href="/?sg=finder">עזרה בבחירה</a></div><div class="wl">' +
         WORLDS.map(function (x) { return '<a href="' + x.url + '"><div class="im"><img src="' + x.img + '" alt="" loading="lazy"></div><div class="lb">' + esc(x.name) + '<small>' + esc(x.line) + '</small></div></a>'; }).join('') + '</div></section>' +
         '<section class="sec w" style="padding-top:0"><div class="hrow"><h2>פריטים שאוהבים לארוז</h2><a href="' + dep('מתנות מעוצבות') + '">לכל המוצרים</a></div><div class="grid" data-fill="products">' + '<div class="sk"></div>'.repeat(8) + '</div></section>' +
         '<section class="sec pk"><div class="w"><div class="hrow"><h2>מארזים מוכנים</h2><a href="/?sg=gifts">לכל המארזים</a></div><div class="boxes" data-fill="pkgs">' + '<div class="sk"></div>'.repeat(4) + '</div></div></section>' +
-        '<section class="sec w"><div class="ins"><div class="look" data-fill="look"></div><div><h2>מהסטודיו שלנו</h2><ol class="steps"><li><b>בוחרים</b><span>פריטים מכל מחלקות החנות, או מארז מוכן</span></li><li><b>אורזים</b><span>קופסה או צלופן, סרט וכרטיס ברכה בכתב יד</span></li><li><b>מקבלים</b><span>במשלוח עד הבית או באיסוף מהחנות</span></li></ol><a class="btn" href="/?sg=studio">לסטודיו המתנות</a></div></div></section></main>' +
+        '<section class="sec w"><div class="ins"><div class="look" data-fill="look"></div><div><h2>מהסטודיו שלנו</h2><ol class="steps"><li><b>בוחרים</b><span>פריטים מכל מחלקות החנות, או מארז מוכן</span></li><li><b>אורזים</b><span>קופסה או צלופן, סרט וכרטיס ברכה אישי</span></li><li><b>מקבלים</b><span>במשלוח עד הבית או באיסוף מהחנות</span></li></ol><a class="btn" href="/?sg=studio">לסטודיו המתנות</a></div></div></section></main>' +
         '<footer class="ft"><div class="rib" aria-hidden="true">' + B.ribbon('שיר מתנות · SHEER GIFTS') + '</div><div class="w"><div class="fg"><div><h3>מועדון שיר מתנות</h3><p style="margin:0">קולקציות חדשות, מארזי חג ורעיונות למתנות.</p><form onsubmit="return false"><input type="email" placeholder="כתובת מייל" aria-label="מייל"><button>הצטרפות</button></form></div>' +
         '<div><h3>מחלקות</h3>' + NAV.slice(0, 6).map(function (n) { return '<a href="' + dep(n) + '">' + esc(n) + '</a>'; }).join('') + '</div>' +
         '<div><h3>מתנות</h3><a href="/?sg=studio">סטודיו המתנות</a><a href="/?sg=gifts">מארזים מוכנים</a><a href="/?sg=finder">יועץ המתנות</a><a href="/?sg=looks">השראות</a></div>' +
@@ -222,27 +223,29 @@
       return l.slice(0, 4).map(function (p) { return '<a class="bx" href="' + p.url + '"><div class="lid">' + p.items.slice(0, 3).map(function (x) { return '<img src="' + esc(x.img) + '" alt="" loading="lazy">'; }).join('') + '<div class="rb">' + esc(p.title) + '</div></div><b>' + esc(p.title) + '</b><div class="m"><span>' + esc(p.kicker) + ' · ' + p.items.length + ' פריטים</span>' + nis(p.total) + '</div></a>'; }).join('');
     },
     // the hero gift re-wraps itself with the real items of each ready package
-    hero: function (root, l) {
-      var occ = root.querySelector('[data-occ]'), st = root.querySelector('[data-stage]'); if (!l.length) return;
-      var POS = [[50, 40, '40%'], [24, 60, '30%'], [76, 58, '30%'], [52, 70, '26%']];
+    // examples of gifts built from real items with clean photos; live names and prices
+    GIFTS: [['לשבת', 'שולחן של שבת', ['8017138', '9006924', '9565461']], ['אירוח', 'שולחן מארח', ['6570104', '8831236', '8434408']], ['לבית חדש', 'ברכת הבית', ['6629644', '8601857', '8764434']], ['לה', 'רגע של פינוק', ['8434432', '8764437', '7881244']], ['לתינוק', 'ברוכים הבאים', ['9558273', '9558287', '7962381']]],
+    hero: function (root) {
+      var K = W.SGKit, occ = root.querySelector('[data-occ]'), st = root.querySelector('[data-stage]');
+      var POS = [[50, 40, '42%'], [23, 60, '32%'], [77, 58, '32%']], cache = {};
+      var load = function (g) { return cache[g[0]] || (cache[g[0]] = Promise.all(g[2].map(function (id) { return K.item(id).catch(function () { return null; }); })).then(function (ps) { return ps.filter(Boolean).map(function (p) { var c = (W.SG_CUTS || {})[p.id]; return { name: p.name, price: p.price, img: c ? BASE + 'cut/' + p.id + '.webp?v=' + c : p.img }; }); })); };
       var show = function (i) {
-        var p = l[i]; [].forEach.call(occ.children, function (b, j) { b.setAttribute('aria-pressed', j === i); });
+        var g = B.GIFTS[i]; [].forEach.call(occ.children, function (b, j) { b.setAttribute('aria-pressed', j === i); });
         st.classList.add('out');
-        Promise.all(p.items.slice(0, 4).map(data.cut)).then(function (srcs) {
-          setTimeout(function () {
-            [].forEach.call(st.querySelectorAll('.it'), function (e) { e.remove(); });
-            st.querySelector('.sheet').insertAdjacentHTML('afterend', srcs.map(function (s, j) { var q = POS[j]; return '<div class="it" style="--x:' + q[0] + '%;--y:' + q[1] + '%;--w:' + q[2] + '"><img src="' + esc(s) + '" alt="' + esc(shortN(p.items[j].name)) + '"></div>'; }).join(''));
-            st.querySelector('[data-tt]').textContent = p.title;
-            st.querySelector('[data-tn]').innerHTML = esc(p.kicker) + ' · ' + p.items.length + ' פריטים · ' + nis(p.total);
-            requestAnimationFrame(function () { requestAnimationFrame(function () { st.classList.remove('out'); }); });
-          }, 280);
+        Promise.all([load(g), new Promise(function (r) { setTimeout(r, 280); })]).then(function (res) {
+          var ps = res[0]; if (!ps.length) return;
+          [].forEach.call(st.querySelectorAll('.it'), function (e) { e.remove(); });
+          st.querySelector('.sheet').insertAdjacentHTML('afterend', ps.map(function (p, j) { var q = POS[j]; return '<div class="it" style="--x:' + q[0] + '%;--y:' + q[1] + '%;--w:' + q[2] + '"><img src="' + esc(p.img) + '" alt="' + esc(shortN(p.name)) + '"></div>'; }).join(''));
+          st.querySelector('[data-tt]').textContent = g[1];
+          st.querySelector('[data-tn]').innerHTML = ps.length + ' פריטים מהחנות · ' + nis(ps.reduce(function (s, p) { return s + p.price; }, 0));
+          requestAnimationFrame(function () { requestAnimationFrame(function () { st.classList.remove('out'); }); });
         });
       };
-      occ.innerHTML = l.map(function (p, i) { return '<button type="button" aria-pressed="false">' + esc(p.kicker.replace(/^מארז /, '').replace(/^מתנה /, '')) + '</button>'; }).join('');
+      occ.innerHTML = B.GIFTS.map(function (g) { return '<button type="button" aria-pressed="false">' + esc(g[0]) + '</button>'; }).join('');
       [].forEach.call(occ.children, function (b, i) { b.addEventListener('click', function () { show(i); }); });
       show(0);
     },
-    look: 'hero', dot: 'dot'
+    look: 'studio', dot: 'dot'
   };
 
   /* =====================================================================
@@ -268,7 +271,7 @@
       '.p .nm{font-size:15px;line-height:1.35;margin-top:10px}.p .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.p .pr{font-weight:800;font-size:17px}.p .add{width:38px;height:38px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:20px}.p:hover .add{background:var(--co)}' +
       '.p.big{grid-column:span 2;grid-row:span 2;background:var(--co);color:#fff}.p.big .im{background:#fff}.p.big .nm{font:400 26px/1.2 "Suez One",serif;margin-top:16px}.p.big .pr{font-size:22px}.p.big .add{background:#fff;color:var(--co)}' +
       '.pkb{background:var(--ink);color:#fff}.pkb .hrow a{color:#fff}.car{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}.car>a{flex:0 0 clamp(270px,30vw,420px);scroll-snap-align:start}' +
-      '.car .sq{aspect-ratio:1;background:var(--tint);position:relative;overflow:hidden}.car .sq img{position:absolute;width:46%;aspect-ratio:1;object-fit:contain;mix-blend-mode:multiply}.car .sq img:nth-child(1){right:8%;top:10%;width:54%}.car .sq img:nth-child(2){left:8%;top:30%}.car .sq img:nth-child(3){right:30%;bottom:4%;width:40%}' +
+      '.car .sq{aspect-ratio:1;background:var(--tint);position:relative;overflow:hidden}.car .sq{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:4px}.car .sq img{width:100%;height:100%;object-fit:cover;background:#fff}.car .sq img:first-child{grid-row:span 2}' +
       '.car .sq em{position:absolute;right:0;bottom:0;background:var(--co);color:#fff;font:400 22px/1 "Suez One",serif;font-style:normal;padding:12px 16px}.car b{display:block;font:400 30px/1.1 "Suez One",serif;margin-top:16px}.car span{opacity:.7;font-size:14px}' +
       '.arw{display:flex;gap:8px}.arw button{width:46px;height:46px;background:#fff;color:var(--ink);font-size:20px}.arw button:hover{background:var(--co);color:#fff}' +
       '.look{position:relative}.look img.bg{width:100%}.dot{position:absolute;left:var(--x);top:var(--y);width:34px;height:34px;margin:-17px 0 0 -17px;background:var(--co);color:#fff;font:400 22px/34px Heebo,sans-serif;text-align:center;transition:transform .2s}.dot:after{content:"+"}.dot:hover{transform:scale(1.15)}' +
@@ -346,7 +349,8 @@
     searchGo(root); menu(root); if (c.after) c.after(root);
     var fill = function (name, html) { var el = root.querySelector('[data-fill="' + name + '"]'); if (el) el.innerHTML = html; };
     data.products().then(function (l) { fill('products', c.products(l)); });
-    data.pkgs().then(function (l) { fill('pkgs', c.pkgs(l)); if (c === B) B.hero(root, l); });
+    data.pkgs().then(function (l) { fill('pkgs', c.pkgs(l)); });
+    if (c === B) B.hero(root);
     if (c === C) C.hero(root);
     var L = data.look(c.look), fig = root.querySelector('[data-fill="look"]');
     if (fig && L.spots.length) { fig.innerHTML = '<picture><source media="(max-width:700px)" srcset="' + L.m + '"><img class="bg" src="' + L.d + '" alt="שולחן ערוך בפריטים מהחנות" loading="lazy"></picture>'; dots(fig, L.spots, c.dot); }
